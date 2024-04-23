@@ -10,6 +10,16 @@ const session = require("express-session");
 // Create the Express app
 const app = express();
 
+// Use the session middleware to maintain sessions
+const gameSession = session({
+  secret: "game",
+  resave: false,
+  saveUninitialized: false,
+  rolling: true,
+  cookie: { maxAge: 300000 },
+});
+app.use(gameSession);
+
 // Use the 'public' folder to serve static files
 app.use(express.static("public"));
 
@@ -18,16 +28,6 @@ app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/", uiRoutes);
-
-// Use the session middleware to maintain sessions
-const chatSession = session({
-  secret: "game",
-  resave: false,
-  saveUninitialized: false,
-  rolling: true,
-  cookie: { maxAge: 300000 },
-});
-app.use(chatSession);
 
 const { createServer } = require("http");
 const { Server } = require("socket.io");
