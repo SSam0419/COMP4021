@@ -1,0 +1,35 @@
+#game-title {
+  background-image: linear-gradient(to right, #48bb78, #3b82f6, #9f7aea);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-size: 3rem;
+  font-weight: 800;
+}
+
+#sign-up-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  width: 400px;
+
+  .input-field {
+    margin-bottom: 1rem;
+    width: 100%;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #333;
+      border-radius: 5px;
+      background-color: #333;
+      color: #fff;
+    }
+  }
+}

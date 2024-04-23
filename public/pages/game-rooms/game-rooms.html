@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Rooms Page</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/pages/game-rooms/game-rooms.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/pages/global.css" />
+    <script
+      src="https://kit.fontawesome.com/f03c3defbc.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="container">
+      <!-- create an overlay of the whole screen showing the instructions -->
+      <div id="instruction-overlay" class="overlay">
+        <div class="overlay-content">
+          <h2>Instructions</h2>
+          <p>DISPLAY INSTRUCTIONS HERE. DISPLAY INSTRUCTIONS HERE. DISPLAY</p>
+          <button id="close-instruction-button" class="secondary-button">
+            Understood
+          </button>
+        </div>
+      </div>
+
+      <h1 id="game-title" style="text-align: left">Before Twilight</h1>
+
+      <h2 style="text-align: left">Game Rooms</h2>
+      <div
+        class="game-room-container"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 5px;
+        "
+      >
+        <button id="instruction-button" class="secondary-button">
+          <i class="fa-solid fa-chalkboard-user" style="margin-right: 4px"></i>
+          Instruction
+        </button>
+        <button id="log-out-button" class="secondary-button">
+          <i
+            class="fa-solid fa-right-from-bracket"
+            style="margin-right: 4px"
+          ></i
+          >Log Out
+        </button>
+      </div>
+
+      <ul id="game-room-list" style="padding: 0">
+        <li class="game-room-container" data-room="1">
+          <h3>Room 1</h3>
+          <p class="text-muted">No Players yet</p>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 5px;
+            "
+          >
+            <div class="player-container">
+              <p style="font-weight: 600">Play 1</p>
+              <p class="player-1-slot">Empty Slot</p>
+              <button class="primary-button join-button">Join</button>
+            </div>
+            <div class="player-container">
+              <p style="font-weight: 600">Play 2</p>
+              <p class="player-2-slot">Empty Slot</p>
+
+              <button class="primary-button join-button">Join</button>
+            </div>
+          </div>
+        </li>
+        <li class="game-room-container" data-room="2">
+          <h3>Room 1</h3>
+          <p class="text-muted">No Players yet</p>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 5px;
+            "
+          >
+            <div class="player-container">
+              <p style="font-weight: 600">Play 1</p>
+              <p class="player-1-slot">Empty Slot</p>
+              <button class="primary-button join-button">Join</button>
+            </div>
+            <div class="player-container">
+              <p style="font-weight: 600">Play 2</p>
+              <p class="player-2-slot">Empty Slot</p>
+
+              <button class="primary-button join-button">Join</button>
+            </div>
+          </div>
+        </li>
+        <li class="game-room-container" data-room="3">
+          <h3>Room 1</h3>
+          <p class="text-muted">No Players yet</p>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 5px;
+            "
+          >
+            <div class="player-container">
+              <p style="font-weight: 600">Play 1</p>
+              <p class="player-1-slot">Empty Slot</p>
+              <button class="primary-button join-button">Join</button>
+            </div>
+            <div class="player-container">
+              <p style="font-weight: 600">Play 2</p>
+              <p class="player-2-slot">Empty Slot</p>
+
+              <button class="primary-button join-button">Join</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <script src="scripts/authentication.js"></script>
+    <script src="scripts/ui/game-rooms.js"></script>
+    <script>
+      $(function () {
+        GameRooms.initialize();
+
+        Authentication.validate(
+          () => {
+            console.log(
+              "User is already signed in. Redirecting to home page..."
+            );
+          },
+          () => {
+            console.log("User is not signed in.");
+          }
+        );
+      });
+    </script>
+  </body>
+</html>
