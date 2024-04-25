@@ -15,8 +15,10 @@ const SignInForm = (function () {
         password,
         () => {
           $("#hint").text("Sign in successful,  redirecting to game page...");
+          $("#hint").removeClass("text-danger");
           $("#hint").addClass("text-success");
           console.log("Sign in successful");
+          Socket.connect();
           // Redirect to the chat page after 2 secs
           setTimeout(() => {
             window.location.href = "/game-rooms";

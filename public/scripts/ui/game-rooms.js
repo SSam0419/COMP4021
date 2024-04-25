@@ -34,10 +34,42 @@ const GameRooms = (function () {
         .text("User J " + playerNumber);
 
       console.log("Joining Room " + roomId + " - Player " + playerNumber);
+
       roomJoint = roomId;
       slotJoint = playerNumber;
+
+      Socket.joinRoom(roomJoint, slotJoint, Authentication.getUser().username);
     });
   };
 
-  return { initialize };
+  // expected input { "player321" : {username : "player321"} , "player123" : {username : "player123"} ... }
+  const updateOnlinePlayers = function (onlinePlayers) {
+    //append each online players username to the list
+    $("#online-player-list").empty();
+    for (const key in onlinePlayers) {
+      var username = onlinePlayers[key].username;
+      var $li = $("<li>").text(username);
+      $("#online-player-list").append($li);
+    }
+  };
+
+  // expected input { "1" : {player1 : "player321", player2 : "player123"} , "2" :
+  // {player1 : "player321", player2 : "player123"} ... }
+  const updateGameRooms = function (gameRooms) {
+    //update each game room with the players
+    for (const key in gameRooms) {
+      var $gameRoom = $(`.game-room-container[data-room=${key}]`);
+      var room = gameRooms[key];
+      for (const player in room) {
+        var username = room[player];
+        var playerNumber = player.replace("player", "");
+        var $playerSlot = $gameRoom.find(
+          `.player-container .player-${playerNumber}-slot`
+        );
+        $playerSlot.text(username ? username : "Empty Slot");
+      }
+    }
+  };
+
+  return { initialize, updateOnlinePlayers, updateGameRooms };
 })();

@@ -4,15 +4,14 @@ const bcrypt = require("bcrypt");
 const validate = (req, res) => {
   console.log("Validate request received");
   const user = req.session.user;
-  console.log(user);
   if (!user) {
-    return {
+    return res.json({
       status: "error",
-      error: "User is not signed in",
-    };
+      message: "User is not signed in",
+    });
   }
 
-  const users = JSON.parse(fs.readFileSync("./data/users.json"));
+  const users = JSON.parse(fs.readFileSync("data/users.json"));
 
   if (user.username in users) {
     return res.json({
@@ -24,8 +23,15 @@ const validate = (req, res) => {
 
 const signIn = (req, res) => {
   console.log("Sign-in request received");
-
   const { username, password } = req.body;
+
+  //check if already signed in
+  if (global.onlinePlayerList[username]) {
+    return res.json({
+      status: "error",
+      message: "User is already signed in",
+    });
+  }
 
   // read data from data/users.json
   const users = JSON.parse(fs.readFileSync("data/users.json"));
@@ -35,7 +41,7 @@ const signIn = (req, res) => {
     bcrypt.compare(password, users[username].password, (error, result) => {
       if (result) {
         req.session.user = { username };
-        res.json({ status: "success", message: "Sign-in successful" });
+        res.json({ status: "success", user: { username } });
       } else {
         res.json({ status: "error", message: "Incorrect password" });
       }
@@ -70,4 +76,8 @@ const signUp = (req, res) => {
   }
 };
 
-module.exports = { signIn, signUp, validate };
+module.exports = {
+  signIn,
+  signUp,
+  validate,
+};

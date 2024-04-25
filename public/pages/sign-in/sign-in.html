@@ -41,7 +41,10 @@
         <button type="submit" class="primary-button">Sign In</button>
       </form>
     </div>
+    <script src="/socket.io/socket.io.min.js"></script>
+    <script src="scripts/socket.js"></script>
     <script src="scripts/authentication.js"></script>
+    <script src="scripts//ui/game-rooms.js"></script>
     <script src="scripts/ui/sign-in.js"></script>
     <script>
       $(function () {
@@ -52,6 +55,7 @@
             console.log(
               "User is already signed in. Redirecting to home page..."
             );
+            Socket.connect();
             window.location.href = "/game-rooms";
           },
           () => {

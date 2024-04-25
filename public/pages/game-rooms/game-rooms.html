@@ -36,28 +36,50 @@
         class="game-room-container"
         style="
           display: flex;
-          align-items: center;
-          justify-content: space-between;
+          flex-direction: column;
+          justify-content: space-evenly;
           gap: 5px;
         "
       >
-        <button id="instruction-button" class="secondary-button">
-          <i class="fa-solid fa-chalkboard-user" style="margin-right: 4px"></i>
-          Instruction
-        </button>
-        <button id="log-out-button" class="secondary-button">
-          <i
-            class="fa-solid fa-right-from-bracket"
-            style="margin-right: 4px"
-          ></i
-          >Log Out
-        </button>
+        <div
+          class=""
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 5px;
+          "
+        >
+          <button id="instruction-button" class="secondary-button">
+            <i
+              class="fa-solid fa-chalkboard-user"
+              style="margin-right: 4px"
+            ></i>
+            Instruction
+          </button>
+          <button id="log-out-button" class="secondary-button">
+            <i
+              class="fa-solid fa-right-from-bracket"
+              style="margin-right: 4px"
+            ></i
+            >Log Out
+          </button>
+        </div>
+
+        <div class="">
+          <h4>Online Players</h4>
+          <ul id="online-player-list">
+            <li>user 1</li>
+            <li>user 2</li>
+            <li>user 3</li>
+          </ul>
+        </div>
       </div>
 
       <ul id="game-room-list" style="padding: 0">
         <li class="game-room-container" data-room="1">
           <h3>Room 1</h3>
-          <p class="text-muted">No Players yet</p>
+
           <div
             style="
               display: flex;
@@ -80,8 +102,8 @@
           </div>
         </li>
         <li class="game-room-container" data-room="2">
-          <h3>Room 1</h3>
-          <p class="text-muted">No Players yet</p>
+          <h3>Room 2</h3>
+
           <div
             style="
               display: flex;
@@ -104,8 +126,8 @@
           </div>
         </li>
         <li class="game-room-container" data-room="3">
-          <h3>Room 1</h3>
-          <p class="text-muted">No Players yet</p>
+          <h3>Room 3</h3>
+
           <div
             style="
               display: flex;
@@ -129,20 +151,23 @@
         </li>
       </ul>
     </div>
+    <script src="/socket.io/socket.io.min.js"></script>
+    <script src="scripts/socket.js"></script>
     <script src="scripts/authentication.js"></script>
     <script src="scripts/ui/game-rooms.js"></script>
     <script>
       $(function () {
         GameRooms.initialize();
-
+        console.log("Game Rooms Page Loaded");
         Authentication.validate(
           () => {
-            console.log(
-              "User is already signed in. Redirecting to home page..."
-            );
+            console.log("User is signed in.");
+            Socket.connect();
           },
           () => {
             console.log("User is not signed in.");
+            alert("You are not signed in. Redirecting to sign in page...");
+            window.location.href = "/";
           }
         );
       });
