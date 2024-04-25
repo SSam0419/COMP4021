@@ -24,6 +24,12 @@ const Socket = (function () {
       GameRooms.updateOnlinePlayers(onlinePlayers);
     });
 
+    socket.on("game rooms", (message) => {
+      const gameRooms = JSON.parse(message);
+      console.log(gameRooms);
+      GameRooms.updateGameRooms(gameRooms);
+    });
+
     socket.on("room joint", (message) => {
       const gameRooms = JSON.parse(message);
       console.log(gameRooms);
@@ -46,5 +52,9 @@ const Socket = (function () {
     socket.emit("join room", JSON.stringify(message));
   };
 
-  return { getSocket, connect, disconnect, joinRoom };
+  const getRooms = function () {
+    socket.emit("get game rooms");
+  };
+
+  return { getSocket, connect, disconnect, joinRoom, getRooms };
 })();

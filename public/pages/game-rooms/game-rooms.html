@@ -159,10 +159,12 @@
       $(function () {
         GameRooms.initialize();
         console.log("Game Rooms Page Loaded");
+
         Authentication.validate(
           () => {
             console.log("User is signed in.");
             Socket.connect();
+            Socket.getRooms();
           },
           () => {
             console.log("User is not signed in.");

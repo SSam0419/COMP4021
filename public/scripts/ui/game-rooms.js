@@ -25,13 +25,16 @@ const GameRooms = (function () {
           `.player-container .player-${slotJoint}-slot`
         );
         $previousSlot.text("Empty Slot");
+        $previousRoom.find(`button.join-button`).show();
       }
 
       var playerNumber = $playerSlot.index() + 1;
 
-      $playerSlot
-        .find(`p.player-${playerNumber}-slot`)
-        .text("User J " + playerNumber);
+      // $playerSlot
+      //   .find(`p.player-${playerNumber}-slot`)
+      //   .text("User J " + playerNumber);
+
+      $playerSlot.find(`button.join-button`).hide();
 
       console.log("Joining Room " + roomId + " - Player " + playerNumber);
 
@@ -59,6 +62,10 @@ const GameRooms = (function () {
     //update each game room with the players
     for (const key in gameRooms) {
       var $gameRoom = $(`.game-room-container[data-room=${key}]`);
+
+      // this should be 2 buttons, show them all
+      $gameRoom.find(`button.join-button`).show();
+
       var room = gameRooms[key];
       for (const player in room) {
         var username = room[player];
@@ -66,7 +73,15 @@ const GameRooms = (function () {
         var $playerSlot = $gameRoom.find(
           `.player-container .player-${playerNumber}-slot`
         );
+
         $playerSlot.text(username ? username : "Empty Slot");
+        // hide button if not empty
+        if (username) {
+          //hide the join button
+          $gameRoom.find(`button.join-button`)[
+            parseInt(playerNumber) - 1
+          ].style.display = "none";
+        }
       }
     }
   };
