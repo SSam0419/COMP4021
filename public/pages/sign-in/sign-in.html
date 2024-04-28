@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In Page</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/pages/sign-in/sign-in.css" />
+    <link rel="stylesheet" type="text/css" href="/pages/global.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="game-title">Before Twilight</h1>
+      <!-- create a log in form -->
+      <form id="sign-in-form">
+        <div class="input-field">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+            placeholder="enter your username e.g. john doe"
+          />
+        </div>
+        <div class="input-field">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            placeholder="enter your password e.g. password123"
+          />
+        </div>
+        <p id="hint"></p>
+        <p>
+          Don't have an account?
+          <a href="/sign-up">Sign Up</a>
+        </p>
+        <button type="submit" class="primary-button">Sign In</button>
+      </form>
+    </div>
+    <script src="/socket.io/socket.io.min.js"></script>
+    <script src="scripts/socket.js"></script>
+    <script src="scripts/authentication.js"></script>
+    <script src="scripts//ui/game-rooms.js"></script>
+    <script src="scripts/ui/sign-in.js"></script>
+    <script>
+      $(function () {
+        SignInForm.initialize();
+
+        Authentication.validate(
+          () => {
+            console.log(
+              "User is already signed in. Redirecting to home page..."
+            );
+            Socket.connect();
+            window.location.href = "/game-rooms";
+          },
+          () => {
+            console.log("User is not signed in.");
+          }
+        );
+      });
+    </script>
+  </body>
+</html>

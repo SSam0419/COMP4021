@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In Page</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/pages/sign-up/sign-up.css" />
+    <link rel="stylesheet" type="text/css" href="/pages/global.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="game-title">Before Twilight</h1>
+      <!-- create a log in form -->
+      <form id="sign-up-form">
+        <div class="input-field">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+            placeholder="enter your username e.g. john doe"
+          />
+        </div>
+        <div class="input-field">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            placeholder="enter your password e.g. password123"
+          />
+        </div>
+        <div class="input-field">
+          <label for="confirm-password">Enter Your Password Again</label>
+          <input
+            type="password"
+            id="confirm-password"
+            name="password"
+            required
+            placeholder="enter your password again e.g. password123"
+          />
+        </div>
+
+        <p id="hint"></p>
+
+        <p>
+          Already have an account?
+          <a href="/">Sign In</a>
+        </p>
+        <button type="submit" class="primary-button">Sign Up</button>
+      </form>
+    </div>
+
+    <script src="scripts/ui/sign-up.js"></script>
+    <script src="scripts/authentication.js"></script>
+    <script>
+      $(function () {
+        SignUpForm.initialize();
+      });
+    </script>
+  </body>
+</html>
