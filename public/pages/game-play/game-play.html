@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Play Page</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/pages/game-play/game-play.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/pages/global.css" />
+    <script
+      src="https://kit.fontawesome.com/f03c3defbc.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div id="game-play-area">
+      <div id="player-1-board" class="player-board">
+        <h3>Player 1</h3>
+        <div>Score : 10</div>
+        <div>Hit Ability 10s</div>
+      </div>
+
+      <canvas id="game-play-canvas"></canvas>
+
+      <div id="player-2-board" class="player-board">
+        <h3>Player 2</h3>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.min.js"></script>
+    <script src="/scripts/socket.js"></script>
+    <script src="/scripts/authentication.js"></script>
+    <script src="/scripts/ui/game-play.js"></script>
+
+    <script>
+      $(function () {
+        GamePlay.initialize();
+        // Authentication.validate(
+        //   () => {
+        //     console.log("User is signed in.");
+        //     Socket.connect();
+        //   },
+        //   () => {
+        //     console.log("User is not signed in.");
+        //     alert("You are not signed in. Redirecting to sign in page...");
+        //     window.location.href = "/";
+        //   }
+        // );
+      });
+    </script>
+  </body>
+</html>

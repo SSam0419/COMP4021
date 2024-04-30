@@ -33,7 +33,6 @@ body {
   cursor: pointer;
   color: #fff;
 }
-
 .secondary-button {
   width: 100%;
   padding: 0.5rem;
@@ -42,6 +41,15 @@ body {
   cursor: pointer;
   color: #fff;
   background-color: #555;
+}
+.success-button {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  background-color: #2e9b31;
 }
 
 .text-success {

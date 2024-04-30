@@ -1,0 +1,25 @@
+#game-play-area {
+  display: flex;
+}
+
+.player-board {
+  /* fixed on the left of the window */
+  /* position: fixed;
+  left: 0;
+  top: 0; */
+  width: 15vw;
+  height: 100vh;
+  background: #4b4b4b;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+#game-play-canvas {
+  /* takes up the remaining space */
+  /* flex: 1; */
+  width: 70vw;
+  height: 100vh;
+  background: #875a5a;
+}
