@@ -20,6 +20,7 @@ router.get("/game-rooms", (req, res) => {
 });
 
 router.get("/game-play", (req, res) => {
-  res.sendFile(projectRoot + "/public/pages/game-play/before_twilight.html");
+  res.sendFile(projectRoot + "/public/pages/game-play/game-play.html");
 });
+
 module.exports = router;

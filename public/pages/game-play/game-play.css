@@ -1,0 +1,74 @@
+#game-play-area {
+  display: flex;
+  justify-content: space-between;
+}
+
+.player-board {
+  /* fixed on the left of the window */
+  /* position: fixed;
+  left: 0;
+  top: 0; */
+
+  background: #4b4b4b;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  flex: 1;
+}
+
+body {
+  font-family: "Press Start 2P", sans-serif;
+}
+#game-container {
+  position: relative;
+  flex: 2;
+}
+
+canvas, #counter, #game-start, #game-over {
+  top: 0px;
+  left: 0px;
+}
+
+canvas, #game-start, #game-over, #counter {
+  width: 864px;
+  height: 648px;
+}
+
+#game-start, #game-over, #counter {
+  position: absolute;
+}
+
+canvas {
+  background: url(/assets/background.png);
+  background-size: cover;
+}
+
+#game-start, #game-over {
+  background: rgba(1, 1, 1, 0.8);
+}
+
+#counter text {
+  font-size: 130%;
+  fill: white;
+  stroke: black;
+  stroke-width: 1px;
+}
+
+#game-start text {
+  font-size: 150%;
+  fill: white;
+  text-anchor: middle;
+}
+
+#game-start #game-title {
+  font-size: 400%;
+  fill: url(#title-fill);
+  stroke: black;
+}
+
+#game-over text {
+  font-size: 120%;
+  fill: url(#game-over-fill);
+  text-anchor: middle;
+}

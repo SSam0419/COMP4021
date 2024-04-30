@@ -2,92 +2,65 @@
 <html>
 <head>
     <title>Collect the coins!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P" rel="stylesheet">
-    <style>
-    body {
-        font-family: "Press Start 2P", sans-serif;
-    }
-    #game-container {
-        position: relative;
-    }
-    canvas, #counter, #game-start, #game-over {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-    }
-    canvas, #game-start, #game-over {
-        width: 864px;
-        height: 648px;
-    }
-    canvas {
-        background: url(assets/background.png);
-        background-size: cover;
-    }
-    #game-start, #game-over {
-        background: rgba(1, 1, 1, 0.8);
-    }
-    #counter text {
-        font-size: 130%;
-        fill: white;
-        stroke: black;
-        stroke-width: 1px;
-    }
-    #game-start text {
-        font-size: 150%;
-        fill: white;
-        text-anchor: middle;
-    }
-    #game-start #game-title {
-        font-size: 400%;
-        fill: url(#title-fill);
-        stroke: black;
-    }
-    #game-over text {
-        font-size: 120%;
-        fill: url(#game-over-fill);
-        text-anchor: middle;
-    }
-    </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/pages/game-play/game-play.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/pages/global.css" />
 </head>
 <body>
-    <div id="game-container">
-        <canvas width="864px" height="648px"></canvas>
+    <div id="game-play-area">
+        <div id="player-1-board" class="player-board">
+            <h3>Player 1</h3>
+            <div>Score : 10</div>
+            <div>Hit Ability 10s</div>
+          </div>
+        <div id="game-container">
+            <canvas width="864px" height="648px"></canvas>
 
-        <svg xmlns="http://www.w3.org/2000/svg" id="counter">
-            <text x="10" y="35">
-                TIME:<tspan id="time-remaining">20</tspan>
-            </text>
-        </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" id="counter">
+                <text x="10" y="35">
+                    TIME:<tspan id="time-remaining">20</tspan>
+                </text>
+            </svg>
 
-        <svg xmlns="http://www.w3.org/2000/svg" id="game-start">
-            <defs>
-                <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0.2" stop-color="red" />
-                    <stop offset="0.4" stop-color="yellow" />
-                    <stop offset="0.6" stop-color="green" />
-                    <stop offset="0.8" stop-color="purple" />
-                </linearGradient>
-            </defs>
-            <text id="game-title" x="50%" y="45%">BEFORE TWILIGHT...</text>
-            <text x="50%" y="60%">Click here to start the game</text>
-        </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" id="game-start">
+                <defs>
+                    <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0.2" stop-color="red" />
+                        <stop offset="0.4" stop-color="yellow" />
+                        <stop offset="0.6" stop-color="green" />
+                        <stop offset="0.8" stop-color="purple" />
+                    </linearGradient>
+                </defs>
+                <text id="game-title" x="50%" y="45%">BEFORE TWILIGHT...</text>
+                <text x="50%" y="60%">Click here to start the game</text>
+            </svg>
 
-        <svg xmlns="http://www.w3.org/2000/svg" id="game-over" style="display: none">
-            <defs>
-                <linearGradient id="game-over-fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="red" />
-                    <stop offset="0.5" stop-color="yellow" />
-                    <stop offset="1" stop-color="red" />
-                </linearGradient>
-            </defs>
-            <text x="50%" y="50%">
-                Time's up! You have collected
-                <tspan id="final-coins">0</tspan>
-                coin(s).
-            </text>
-        </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" id="game-over" style="display: none">
+                <defs>
+                    <linearGradient id="game-over-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="red" />
+                        <stop offset="0.5" stop-color="yellow" />
+                        <stop offset="1" stop-color="red" />
+                    </linearGradient>
+                </defs>
+                <text x="50%" y="50%">
+                    Time's up! You have collected
+                    <tspan id="final-coins">0</tspan>
+                    coin(s).
+                </text>
+            </svg>
+        </div>
+
+        <div id="player-2-board" class="player-board">
+            <h3>Player 2</h3>
+        </div>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
     <script src="scripts/game-play/bounding_box.js"></script>
     <script src="scripts/game-play/sprite.js"></script>
