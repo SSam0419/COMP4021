@@ -213,6 +213,7 @@ const Player = function(ctx, x, y, gameArea) {
     // The methods are returned as an object here.
     return {
         getXY: sprite.getXY,
+        setXY: sprite.setXY,
         move: move,
         stop: stop,
         jump: jump,

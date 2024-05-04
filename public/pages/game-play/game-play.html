@@ -28,7 +28,7 @@
                 </text>
             </svg>
 
-            <svg xmlns="http://www.w3.org/2000/svg" id="game-start">
+            <!-- <svg xmlns="http://www.w3.org/2000/svg" id="game-start">
                 <defs>
                     <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0.2" stop-color="red" />
@@ -39,7 +39,7 @@
                 </defs>
                 <text id="game-title" x="50%" y="45%">BEFORE TWILIGHT...</text>
                 <text x="50%" y="60%">Click here to start the game</text>
-            </svg>
+            </svg> -->
 
             <svg xmlns="http://www.w3.org/2000/svg" id="game-over" style="display: none">
                 <defs>
@@ -70,16 +70,36 @@
     <script src="scripts/game-play/platform.js"></script>
     <script src="scripts/game-play/floor.js"></script>
     <script src="scripts/game-play/transporter.js"></script>
+    <script src="/socket.io/socket.io.min.js"></script>
     <script src="scripts/game-play/trap.js"></script>
+    <script src="scripts/socket.js"></script>
+    <script src="scripts/multiplayer/gameroom_config.js"></script>
+    <script src="scripts/multiplayer/gameobjects_config.js"></script>
+    <script src="scripts/ui/game-rooms.js"></script>
     <script>
     $(function() {
+        roomNum = playerSlot = -1
+        initComplete = false
+        Authentication.validate(
+            () => {
+              console.log("User is signed in.");
+              Socket.connect();
+              Socket.getGameConfig();
+              roomNum, playerSlot = GameroomConfig.getConfig()
+              initComplete = true;
+            },
+            () => {
+              console.log("User is not signed in.");
+              alert("You are not signed in. Redirecting to sign in page...");
+              window.location.href = "/";
+            }
+        );
+
         /* Get the canvas and 2D context */
         const cv = $("canvas").get(0);
         const context = cv.getContext("2d");
-        const totalGameTime = 180;   // Total game time in seconds
-        const coinMaxAge = 3000;     // The maximum age of the coins in milliseconds
-        const transporterMaxAge = 15000; // The maximum age of the transporter in milliseconds
-        const trapMaxAge = 6000;
+        
+        //** All of this should be updated through websocket in do frame
         let gameStartTime = 0;      // The timestamp when the game starts
         let collectedcoins = 0;      // The number of coins collected in the game
         let transporterCooldown = 5000; // The cooldown for using the transporter
@@ -90,8 +110,6 @@
         const objectArea = BoundingBox(context, 8, 8, 580, 850);
 
         /* Create the sprites in the game */
-        const player = Player(context, 215, 580, gameArea); // The player
-        const coin = Coin(context, 427, 350);        // The coin
 
         const floor = Floor(context, 0, 615); 
 
@@ -120,49 +138,49 @@
 
         let colliders = new Array(platforms.length + 1).fill(false); // The colliders
 
-        let transporters = [  // The transporters
-            Transporter(context, 427, 350),
-            Transporter(context, 427, 350)
-        ]
+        //Should decide position base on which player
+        const player1 = Player(context, -1, -1, gameArea); // The player
+        const player2 = Player(context, -1, -1, gameArea); // The player
 
-        let trap = Trap(context, 427, 350)  // The trap
+
+        //Coin coordinates should store in server
+        const coin = Coin(context, -1, -1);        // The coin
+
+        let transporters = {
+            1:Transporter(context, -1, -1),
+            2:Transporter(context, -1, -1)
+        }
+
+        const trap = Trap(context, -1, -1)  // The trap
 
         /* The main processing of the game */
         function doFrame(now) {
-            if (gameStartTime == 0) gameStartTime = now;
-
-            /* Update the time remaining */
-            const gameTimeSoFar = now - gameStartTime;
-            const timeRemaining = Math.ceil((totalGameTime * 1000 - gameTimeSoFar) / 1000);
-            $("#time-remaining").text(timeRemaining);
-
-            /* Handle the game over situation here */
-            if (timeRemaining == 0 || collectedcoins == 10){
-                $("#game-over").css("display", "block");
-                $("#final-coins").text(collectedcoins);
+            if(initComplete){
+            
+            // $("#time-remaining").text(timeRemaining);
+            
+            if(GameObjectsConfig.hasUpdate()){
+                let {gameStartTime, coinCoord, teleporterCoord, trapCoord, playerCoord, score} = GameObjectsConfig.getConfig()
+                coin.setXY(coinCoord.x, coinCoord.y)
+                for (let i=1; i<=2; ++i){
+                    transporters[i].setXY(teleporterCoord[i].x, teleporterCoord[i].y)
+                }
+                trap.setXY(trapCoord.x,trapCoord.y)
+                player1.setXY(playerCoord[1].x, playerCoord[1].y)
+                player2.setXY(playerCoord[2].x, playerCoord[2].y)
             }
 
             /* Update the sprites */
             coin.update(now);
-            player.update(now);
-            transporters[0].update(now);
+            player1.update(now);
+            player2.update(now);
             transporters[1].update(now);
+            transporters[2].update(now);
             trap.update(now);
 
-            /* Randomize the coin and collect the coin here */
-            if (coin.getAge(now)>= coinMaxAge){
-                coin.randomize(objectArea);
-            }
-
+            /*
             if (player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)){
-                collectedcoins++;
-                coin.randomize(objectArea);
-            }
-
-            /* Randomize the transporter and move */
-            if (transporters[0].getAge(now)>= transporterMaxAge){
-                transporters[0].randomize(coordinates);
-                transporters[1].randomize(coordinates);
+                Socket.getCoin();
             }
 
             for (let i = 0; i < transporters.length; i++){
@@ -175,17 +193,8 @@
                     }                   
                 }
             }
-
-            if (trap.getAge(now)>= trapMaxAge){
-                trap.randomize(coordinates);
-            }
-
-            if (player.getBoundingBox().isPointInBox(trap.getXY().x, trap.getXY().y)){
-                collectedcoins--;
-                trap.randomize(coordinates);
-            }
             
-            /* Check for colliders */
+            
             for (let i = 0; i < colliders.length - 1; i++){
                 if(platforms[i].getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y + 25)){
                     colliders[i] = true;
@@ -207,77 +216,62 @@
                     player.setInCollider(false);
                 }
             }
-
+            */
 
             /* Clear the screen */
             context.clearRect(0, 0, cv.width, cv.height);
 
             /* Draw the sprites */
             coin.draw();
-            player.draw();
-            transporters[0].draw();
+            player1.draw();
+            player2.draw();
             transporters[1].draw();
+            transporters[2].draw();
             trap.draw();
 
-            /* Process the next frame */
-            if (timeRemaining>0 && collectedcoins<=10){
-                requestAnimationFrame(doFrame);
             }
 
+            requestAnimationFrame(doFrame);
         }
 
-        /* Handle the start of the game */
-        $("#game-start").on("click", function() {
-            coin.randomize(objectArea);
-            transporters[0].randomize(coordinates);
-            transporters[1].randomize(coordinates);
-            trap.randomize(coordinates);
+        // No more game start to trigger
+        /* Handle the keydown of arrow keys and spacebar */
+        $(document).on("keydown", function(event) {
 
-            /* Hide the start screen */
-            $("#game-start").hide();
-            //sounds.background.play();
-
-            /* Handle the keydown of arrow keys and spacebar */
-            $(document).on("keydown", function(event) {
-
-
-                /* TODO */
-                /* Handle the key down */
-                if (event.keyCode == 37){
-                    player.move(1);
-                }else if(event.keyCode == 39){
-                    player.move(2);
-                }else if (event.keyCode == 38){
-                    player.jump();
-                    player.setInCollider(false);
-                }
+            /* TODO */
+            /* Handle the key down */
+            if (event.keyCode == 37){
+                player.move(1);
+            }else if(event.keyCode == 39){
+                player.move(2);
+            }else if (event.keyCode == 38){
+                player.jump();
+                player.setInCollider(false);
+            }
 
 
-            });
-
-            /* Handle the keyup of arrow keys and spacebar */
-            $(document).on("keyup", function(event) {
-
-
-                /* TODO */
-                /* Handle the key up */
-                if (event.keyCode == 37){
-                    player.stop(1);
-                }else if (event.keyCode == 39){
-                    player.stop(2);
-                }
-
-
-
-            });
-
-            $(document).on('click', function(event) {
-                console.log('Platform: x=' + event.clientX + ', y=' + event.clientY);
-            });
-
-            /* Start the game */
-            requestAnimationFrame(doFrame);
         });
+
+        /* Handle the keyup of arrow keys and spacebar */
+        $(document).on("keyup", function(event) {
+
+
+            /* TODO */
+            /* Handle the key up */
+            if (event.keyCode == 37){
+                player.stop(1);
+            }else if (event.keyCode == 39){
+                player.stop(2);
+            }
+
+        });
+
+        $(document).on('click', function(event) {
+            console.log('Platform: x=' + event.clientX + ', y=' + event.clientY);
+        });
+
+        /* Start the game */
+        requestAnimationFrame(doFrame);
     });
     </script>
 </body>

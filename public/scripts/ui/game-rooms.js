@@ -26,6 +26,21 @@ const GameRooms = (function () {
 
       Socket.joinRoom(roomJoint, slotJoint, Authentication.getUser().username);
     });
+
+    $("#game-room-list").on("click", ".start-button", function () {
+      var $gameRoom = $(this).closest(".game-room-container");
+      var roomId = $gameRoom.data("room");
+      var $playerSlot = $(this).closest(".player-container");
+      var playerNumber = $playerSlot.index() + 1;
+
+      console.log("Start Room " + roomId + " - Player " + playerNumber);
+
+      roomJoint = roomId;
+
+      Socket.startGame(roomId);
+    });
+
+
   };
 
   // expected input { "player321" : {username : "player321"} , "player123" : {username : "player123"} ... }
