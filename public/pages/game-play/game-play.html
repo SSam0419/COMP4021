@@ -87,15 +87,14 @@
     <script src="scripts/ui/game-rooms.js"></script>
     <script>
       $(function () {
-        roomNum = playerSlot = -1;
-        initComplete = false;
+        let roomNum = null;
+        let playerSlot = null;
+        let initComplete = false;
         Authentication.validate(
           () => {
             console.log("User is signed in.");
             Socket.connect();
             Socket.getGameConfig();
-            roomNum, (playerSlot = GameroomConfig.getConfig());
-            initComplete = true;
           },
           () => {
             console.log("User is not signed in.");
@@ -152,6 +151,7 @@
         //Should decide position base on which player
         const player1 = Player(context, -1, -1, gameArea); // The player
         const player2 = Player(context, -1, -1, gameArea); // The player
+        let playerInstance = null
 
         //Coin coordinates should store in server
         const coin = Coin(context, -1, -1); // The coin
@@ -165,6 +165,18 @@
 
         /* The main processing of the game */
         function doFrame(now) {
+          if (!initComplete){
+            ({roomNum, playerSlot} = GameroomConfig.getConfig());
+            if(roomNum && playerSlot){
+              initComplete = true;
+
+              playerInstance = player1;
+              if (playerSlot === 2) {
+                playerInstance = player2;
+              }
+            }
+          }
+
           if (initComplete) {
             // $("#time-remaining").text(timeRemaining);
 
@@ -196,46 +208,16 @@
             transporters[1].update(now);
             transporters[2].update(now);
             trap.update(now);
-
+            playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
+            
             /*
             if (player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)){
                 Socket.getCoin();
-            }
+            }*/
 
-            for (let i = 0; i < transporters.length; i++){
-                if (player.getBoundingBox().isPointInBox(transporters[i].getXY().x, transporters[i].getXY().y) && (now - transporterTimeStamp > transporterCooldown)){
-                    transporterTimeStamp = now;
-                    if (i == 0){
-                        player.transport(transporters[1].getXY().x, transporters[1].getXY().y, now);
-                    }else{
-                        player.transport(transporters[0].getXY().x, transporters[0].getXY().y, now);
-                    }
-                }
-            }
-
-
-            for (let i = 0; i < colliders.length - 1; i++){
-                if(platforms[i].getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y + 25)){
-                    colliders[i] = true;
-                }else{
-                    colliders[i] = false;
-                }
-            }
-
-            if (floor.getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y + 25)){
-                colliders[colliders.length - 1] = true;
-            }else{
-                colliders[colliders.length - 1] = false;
-            }
-
-            if (player.getInFall() || !player.getInJump()){
-                if(colliders.some(value => value === true)){
-                    player.setInCollider(true);
-                }else{
-                    player.setInCollider(false);
-                }
-            }
-            */
+            playerGravity(player1)
+            playerGravity(player2)
+            
 
             /* Clear the screen */
             context.clearRect(0, 0, cv.width, cv.height);
@@ -252,19 +234,48 @@
           requestAnimationFrame(doFrame);
         }
 
+
+        function playerGravity(player){
+          for (let i = 0; i < transporters.length; i++){
+            if (player.getBoundingBox().isPointInBox(transporters[i].getXY().x, transporters[i].getXY().y) && (now - transporterTimeStamp > transporterCooldown)){
+                transporterTimeStamp = now;
+                if (i == 0){
+                    player.transport(transporters[1].getXY().x, transporters[1].getXY().y, now);
+                }else{
+                    player.transport(transporters[0].getXY().x, transporters[0].getXY().y, now);
+                }
+            }
+        }
+
+
+        for (let i = 0; i < colliders.length - 1; i++){
+            if(platforms[i].getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y + 25)){
+                colliders[i] = true;
+            }else{
+                colliders[i] = false;
+            }
+        }
+
+        if (floor.getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y + 25)){
+            colliders[colliders.length - 1] = true;
+        }else{
+            colliders[colliders.length - 1] = false;
+        }
+
+        if (player.getInFall() || !player.getInJump()){
+            if(colliders.some(value => value === true)){
+                player.setInCollider(true);
+            }else{
+                player.setInCollider(false);
+            }
+        }
+        }
+
+
         // No more game start to trigger
         /* Handle the keydown of arrow keys and spacebar */
 
         $(document).on("keydown", function (event) {
-          const gameConfic = GameroomConfig.getConfig();
-          const { roomNum, playerSlot } = gameConfic;
-          console.log("gameConfic", { roomNum, playerSlot });
-
-          let playerInstance = player1;
-          if (playerSlot === 2) {
-            playerInstance = player2;
-          }
-
           if (event.keyCode == 37) {
             playerInstance.move(1);
             Socket.playerKeys(roomNum, playerSlot, 37, "keydown");
@@ -280,10 +291,6 @@
 
         /* Handle the keyup of arrow keys and spacebar */
         $(document).on("keyup", function (event) {
-          const gameConfic = GameroomConfig.getConfig();
-          const { roomNum, playerSlot } = gameConfic;
-          console.log("gameConfic", { roomNum, playerSlot });
-
           let playerInstance = player1;
           if (playerSlot === 2) {
             playerInstance = player2;

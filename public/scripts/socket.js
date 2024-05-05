@@ -48,7 +48,6 @@ const Socket = (function () {
 
     socket.on("game stat", (message) => {
       if (!GameObjectsConfig) return;
-
       const {
         gameStartTime,
         coinCoord,
@@ -106,8 +105,12 @@ const Socket = (function () {
   };
 
   const playerMovement = function (room, player, command, parameters) {
-    message = { room, player, command, parameters };
-    socket.emit("game command", JSON.stringify(message));
+    if(getSocket() && room && player){
+      message = { room, player, command, parameters };
+      socket.emit("game command", JSON.stringify(message));
+    }else{
+      console.log("Socket not initialized")
+    }
   };
 
   const playerKeys = function (room, player, keyCode, event) {

@@ -139,14 +139,14 @@ const Player = function (ctx, x, y, gameArea) {
     return inCollider;
   };
 
-  const updateSocketPlayerMovement = () => {
+  const updateSocketPlayerMovement = function (room, slot) {
     //  {room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
 
-    Socket.playerMovement(1, 1, "updatePos", {
+    Socket.playerMovement(room, slot, "updatePos", {
       x: sprite.getXY().x,
       y: sprite.getXY().y,
     });
-    console.log("Player Movement Updated", sprite.getXY());
+    // console.log("Player Movement Updated", sprite.getXY());
   };
 
   // This function sets the player's moving direction.
@@ -322,6 +322,7 @@ const Player = function (ctx, x, y, gameArea) {
     slowDown: slowDown,
     getBoundingBox: sprite.getBoundingBox,
     draw: sprite.draw,
+    updateSocketPlayerMovement: updateSocketPlayerMovement,
     update: update,
   };
 };

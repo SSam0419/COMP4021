@@ -1,6 +1,6 @@
 const GameroomConfig = (function(){
-    let roomNum = -1;
-    let playerSlot = -1; // Slot of player
+    let roomNum = null;
+    let playerSlot = null; // Slot of player
 
     const setConfig = function(roomNumA, playerSlotA){
         roomNum = roomNumA;

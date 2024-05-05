@@ -61,7 +61,6 @@ const GameServer = function () {
         sockets[i] = socket;
       }
     }
-    console.log(sockets);
   };
 
   // Be called by server socket
@@ -120,6 +119,7 @@ const GameServer = function () {
         sockets[i].emit("game end", JSON.stringify(packReturn()));
       }
     }
+    setTimeout(() => gameTick(), 1000);
   };
 
   const packReturn = function () {
