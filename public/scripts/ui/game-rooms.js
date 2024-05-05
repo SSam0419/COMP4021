@@ -39,8 +39,6 @@ const GameRooms = (function () {
 
       Socket.startGame(roomId);
     });
-
-
   };
 
   // expected input { "player321" : {username : "player321"} , "player123" : {username : "player123"} ... }
@@ -84,5 +82,18 @@ const GameRooms = (function () {
     }
   };
 
-  return { initialize, updateOnlinePlayers, updateGameRooms };
+  const getRoomJoint = function () {
+    return roomJoint;
+  };
+  const getSlotJoint = function () {
+    return slotJoint;
+  };
+
+  return {
+    initialize,
+    updateOnlinePlayers,
+    updateGameRooms,
+    getRoomJoint,
+    getSlotJoint,
+  };
 })();

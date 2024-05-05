@@ -3,7 +3,7 @@ const session = require("express-session");
 
 const authRoutes = require("./server/routes/auth.js");
 const uiRoutes = require("./server/routes/ui.js");
-const GameServer = require("./server/multiplayer/gameplay_server.js")
+const GameServer = require("./server/multiplayer/gameplay_server.js");
 // Create the Express app
 const app = express();
 
@@ -31,8 +31,8 @@ global.gameRooms = {
 global.gameServers = {
   1: new GameServer(),
   2: new GameServer(),
-  3: new GameServer()
-}
+  3: new GameServer(),
+};
 global.sockets = {};
 
 // Use the json middleware to parse JSON data
@@ -107,31 +107,32 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("click start game", (message)=>{
+  socket.on("click start game", (message) => {
     const { room } = JSON.parse(message);
     let hasEmpty = false;
-    for (let i=1; i<=2; ++i){
-      if(gameRooms[room][`player${i}`]===null){
+    for (let i = 1; i <= 2; ++i) {
+      if (gameRooms[room][`player${i}`] === null) {
         hasEmpty = true;
       }
     }
     // Start Game only when room is full
-    if(!hasEmpty){
-      const user1 = gameRooms[room]['player1']
-      const user2 = gameRooms[room]['player2']
-      const socket1 = sockets[user1]
-      const socket2 = sockets[user2]
-      gameServers[room].initialize(user1, user2)
-      socket1.emit("start game")
-      socket2.emit("start game")
+    if (!hasEmpty) {
+      const user1 = gameRooms[room]["player1"];
+      const user2 = gameRooms[room]["player2"];
+      const socket1 = sockets[user1];
+      const socket2 = sockets[user2];
+      gameServers[room].initialize(user1, user2);
+      socket1.emit("start game");
+      socket2.emit("start game");
     }
-  })
+  });
 
   // Given the username, return the gameroom and player
   // expected message: {username: "username"}
-  socket.on("get game config", (message)=>{
+  socket.on("get game config", (message) => {
     const username = socket.request.session.user.username;
-    let roomNum, player = -1
+    let roomNum,
+      player = -1;
     for (let i = 1; i <= Object.keys(gameRooms).length; i++) {
       for (let j = 1; j <= 2; j++) {
         if (gameRooms[i][`player${j}`] === username) {
@@ -141,19 +142,28 @@ io.on("connection", (socket) => {
       }
     }
 
-    gameServers[roomNum].setSocket(username, socket)
-    console.log("socket attached "+username)
-    toReturn = {roomNum, player}
-    socket.emit('game config', JSON.stringify(toReturn))
-  })
+    gameServers[roomNum].setSocket(username, socket);
+    console.log("socket attached " + username);
+    toReturn = { roomNum, player };
+    socket.emit("game config", JSON.stringify(toReturn));
+  });
 
   // Given the gameroom, player and command, do the command in the gameroom
   // expected message: {room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
-  socket.on("game command", (message)=>{
-    const {room, player, command, parameters} = JSON.parse(message)
-    gameServers[room].doCommand(command, player, parameters)
-  })
+  socket.on("game command", (message) => {
+    const { room, player, command, parameters } = JSON.parse(message);
+    console.log("game command received", room, player, command, parameters);
+    gameServers[room].doCommand(command, player, parameters);
+  });
 
+  socket.on("game keys", (message) => {
+    const { room, player, keyCode, event } = JSON.parse(message);
+    console.log("game keys received", room, player, keyCode, event);
+    io.emit(
+      "game keys event",
+      JSON.stringify({ room, player, keyCode, event })
+    );
+  });
 });
 
 // Use a web server to listen at port 8000

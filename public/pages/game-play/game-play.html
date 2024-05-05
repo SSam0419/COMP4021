@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Collect the coins!</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P"
+      rel="stylesheet"
+    />
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link
       rel="stylesheet"
@@ -11,24 +14,25 @@
       href="/pages/game-play/game-play.css"
     />
     <link rel="stylesheet" type="text/css" href="/pages/global.css" />
-</head>
-<body>
+  </head>
+  <body>
     <div id="game-play-area">
-        <div id="player-1-board" class="player-board">
-            <h3>Player 1</h3>
-            <div>Score : 10</div>
-            <div>Hit Ability 10s</div>
-          </div>
-        <div id="game-container">
-            <canvas width="864px" height="648px"></canvas>
+      <div id="player-1-board" class="player-board">
+        <h3>Player 1</h3>
+        <div>Score : 10</div>
+        <div>Hit Ability 10s</div>
+      </div>
+      <div id="game-container">
+        <canvas width="864px" height="648px"></canvas>
 
-            <svg xmlns="http://www.w3.org/2000/svg" id="counter">
-                <text x="10" y="35">
-                    TIME:<tspan id="time-remaining">20</tspan>
-                </text>
-            </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" id="counter">
+          <text x="10" y="35">
+            TIME:
+            <tspan id="time-remaining">20</tspan>
+          </text>
+        </svg>
 
-            <!-- <svg xmlns="http://www.w3.org/2000/svg" id="game-start">
+        <!-- <svg xmlns="http://www.w3.org/2000/svg" id="game-start">
                 <defs>
                     <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0.2" stop-color="red" />
@@ -41,27 +45,32 @@
                 <text x="50%" y="60%">Click here to start the game</text>
             </svg> -->
 
-            <svg xmlns="http://www.w3.org/2000/svg" id="game-over" style="display: none">
-                <defs>
-                    <linearGradient id="game-over-fill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stop-color="red" />
-                        <stop offset="0.5" stop-color="yellow" />
-                        <stop offset="1" stop-color="red" />
-                    </linearGradient>
-                </defs>
-                <text x="50%" y="50%">
-                    Time's up! You have collected
-                    <tspan id="final-coins">0</tspan>
-                    coin(s).
-                </text>
-            </svg>
-        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          id="game-over"
+          style="display: none"
+        >
+          <defs>
+            <linearGradient id="game-over-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="red" />
+              <stop offset="0.5" stop-color="yellow" />
+              <stop offset="1" stop-color="red" />
+            </linearGradient>
+          </defs>
+          <text x="50%" y="50%">
+            Time's up! You have collected
+            <tspan id="final-coins">0</tspan>
+            coin(s).
+          </text>
+        </svg>
+      </div>
 
-        <div id="player-2-board" class="player-board">
-            <h3>Player 2</h3>
-        </div>
+      <div id="player-2-board" class="player-board">
+        <h3>Player 2</h3>
+      </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+    <script src="scripts/socket.js"></script>
     <script src="scripts/game-play/bounding_box.js"></script>
     <script src="scripts/game-play/sprite.js"></script>
     <script src="scripts/authentication.js"></script>
@@ -72,36 +81,36 @@
     <script src="scripts/game-play/transporter.js"></script>
     <script src="/socket.io/socket.io.min.js"></script>
     <script src="scripts/game-play/trap.js"></script>
-    <script src="scripts/socket.js"></script>
+
     <script src="scripts/multiplayer/gameroom_config.js"></script>
     <script src="scripts/multiplayer/gameobjects_config.js"></script>
     <script src="scripts/ui/game-rooms.js"></script>
     <script>
-    $(function() {
-        roomNum = playerSlot = -1
-        initComplete = false
+      $(function () {
+        roomNum = playerSlot = -1;
+        initComplete = false;
         Authentication.validate(
-            () => {
-              console.log("User is signed in.");
-              Socket.connect();
-              Socket.getGameConfig();
-              roomNum, playerSlot = GameroomConfig.getConfig()
-              initComplete = true;
-            },
-            () => {
-              console.log("User is not signed in.");
-              alert("You are not signed in. Redirecting to sign in page...");
-              window.location.href = "/";
-            }
+          () => {
+            console.log("User is signed in.");
+            Socket.connect();
+            Socket.getGameConfig();
+            roomNum, (playerSlot = GameroomConfig.getConfig());
+            initComplete = true;
+          },
+          () => {
+            console.log("User is not signed in.");
+            alert("You are not signed in. Redirecting to sign in page...");
+            window.location.href = "/";
+          }
         );
 
         /* Get the canvas and 2D context */
         const cv = $("canvas").get(0);
         const context = cv.getContext("2d");
-        
+
         //** All of this should be updated through websocket in do frame
-        let gameStartTime = 0;      // The timestamp when the game starts
-        let collectedcoins = 0;      // The number of coins collected in the game
+        let gameStartTime = 0; // The timestamp when the game starts
+        let collectedcoins = 0; // The number of coins collected in the game
         let transporterCooldown = 5000; // The cooldown for using the transporter
         let transporterTimeStamp = 0;
 
@@ -111,30 +120,32 @@
 
         /* Create the sprites in the game */
 
-        const floor = Floor(context, 0, 615); 
+        const floor = Floor(context, 0, 615);
 
         const coordinates = [
-            { x: 33, y: 223 },
-            { x: 33, y: 103 },
-            { x: 178, y: 463 },
-            { x: 178, y: 392 },
-            { x: 178, y: 295 },
-            { x: 178, y: 151 },
-            { x: 321, y: 343 },
-            { x: 321, y: 223 },
-            { x: 321, y: 103 },
-            { x: 465, y: 295 },
-            { x: 465, y: 151 },
-            { x: 682, y: 511 },
-            { x: 682, y: 415 },
-            { x: 682, y: 321 },
-            { x: 682, y: 223 },
-            { x: 753, y: 103 },
-            { x: 608, y: 103 },
-            { x: 58, y: 343 }
+          { x: 33, y: 223 },
+          { x: 33, y: 103 },
+          { x: 178, y: 463 },
+          { x: 178, y: 392 },
+          { x: 178, y: 295 },
+          { x: 178, y: 151 },
+          { x: 321, y: 343 },
+          { x: 321, y: 223 },
+          { x: 321, y: 103 },
+          { x: 465, y: 295 },
+          { x: 465, y: 151 },
+          { x: 682, y: 511 },
+          { x: 682, y: 415 },
+          { x: 682, y: 321 },
+          { x: 682, y: 223 },
+          { x: 753, y: 103 },
+          { x: 608, y: 103 },
+          { x: 58, y: 343 },
         ];
 
-        const platforms = coordinates.map(coord => new Platform(context, coord.x, coord.y));  // The platforms
+        const platforms = coordinates.map(
+          (coord) => new Platform(context, coord.x, coord.y)
+        ); // The platforms
 
         let colliders = new Array(platforms.length + 1).fill(false); // The colliders
 
@@ -142,32 +153,40 @@
         const player1 = Player(context, -1, -1, gameArea); // The player
         const player2 = Player(context, -1, -1, gameArea); // The player
 
-
         //Coin coordinates should store in server
-        const coin = Coin(context, -1, -1);        // The coin
+        const coin = Coin(context, -1, -1); // The coin
 
         let transporters = {
-            1:Transporter(context, -1, -1),
-            2:Transporter(context, -1, -1)
-        }
+          1: Transporter(context, -1, -1),
+          2: Transporter(context, -1, -1),
+        };
 
-        const trap = Trap(context, -1, -1)  // The trap
+        const trap = Trap(context, -1, -1); // The trap
 
         /* The main processing of the game */
         function doFrame(now) {
-            if(initComplete){
-            
+          if (initComplete) {
             // $("#time-remaining").text(timeRemaining);
-            
-            if(GameObjectsConfig.hasUpdate()){
-                let {gameStartTime, coinCoord, teleporterCoord, trapCoord, playerCoord, score} = GameObjectsConfig.getConfig()
-                coin.setXY(coinCoord.x, coinCoord.y)
-                for (let i=1; i<=2; ++i){
-                    transporters[i].setXY(teleporterCoord[i].x, teleporterCoord[i].y)
-                }
-                trap.setXY(trapCoord.x,trapCoord.y)
-                player1.setXY(playerCoord[1].x, playerCoord[1].y)
-                player2.setXY(playerCoord[2].x, playerCoord[2].y)
+
+            if (GameObjectsConfig.hasUpdate()) {
+              let {
+                gameStartTime,
+                coinCoord,
+                teleporterCoord,
+                trapCoord,
+                playerCoord,
+                score,
+              } = GameObjectsConfig.getConfig();
+              coin.setXY(coinCoord.x, coinCoord.y);
+              for (let i = 1; i <= 2; ++i) {
+                transporters[i].setXY(
+                  teleporterCoord[i].x,
+                  teleporterCoord[i].y
+                );
+              }
+              trap.setXY(trapCoord.x, trapCoord.y);
+              player1.setXY(playerCoord[1].x, playerCoord[1].y);
+              player2.setXY(playerCoord[2].x, playerCoord[2].y);
             }
 
             /* Update the sprites */
@@ -190,11 +209,11 @@
                         player.transport(transporters[1].getXY().x, transporters[1].getXY().y, now);
                     }else{
                         player.transport(transporters[0].getXY().x, transporters[0].getXY().y, now);
-                    }                   
+                    }
                 }
             }
-            
-            
+
+
             for (let i = 0; i < colliders.length - 1; i++){
                 if(platforms[i].getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y + 25)){
                     colliders[i] = true;
@@ -228,51 +247,109 @@
             transporters[1].draw();
             transporters[2].draw();
             trap.draw();
+          }
 
-            }
-
-            requestAnimationFrame(doFrame);
+          requestAnimationFrame(doFrame);
         }
 
         // No more game start to trigger
         /* Handle the keydown of arrow keys and spacebar */
-        $(document).on("keydown", function(event) {
 
-            /* TODO */
-            /* Handle the key down */
-            if (event.keyCode == 37){
-                player.move(1);
-            }else if(event.keyCode == 39){
-                player.move(2);
-            }else if (event.keyCode == 38){
-                player.jump();
-                player.setInCollider(false);
-            }
+        $(document).on("keydown", function (event) {
+          const gameConfic = GameroomConfig.getConfig();
+          const { roomNum, playerSlot } = gameConfic;
+          console.log("gameConfic", { roomNum, playerSlot });
 
+          let playerInstance = player1;
+          if (playerSlot === 2) {
+            playerInstance = player2;
+          }
 
+          if (event.keyCode == 37) {
+            playerInstance.move(1);
+            Socket.playerKeys(roomNum, playerSlot, 37, "keydown");
+          } else if (event.keyCode == 39) {
+            playerInstance.move(2);
+            Socket.playerKeys(roomNum, playerSlot, 39, "keydown");
+          } else if (event.keyCode == 38) {
+            playerInstance.jump();
+            playerInstance.setInCollider(false);
+            Socket.playerKeys(roomNum, playerSlot, 38, "keydown");
+          }
         });
 
         /* Handle the keyup of arrow keys and spacebar */
-        $(document).on("keyup", function(event) {
+        $(document).on("keyup", function (event) {
+          const gameConfic = GameroomConfig.getConfig();
+          const { roomNum, playerSlot } = gameConfic;
+          console.log("gameConfic", { roomNum, playerSlot });
 
+          let playerInstance = player1;
+          if (playerSlot === 2) {
+            playerInstance = player2;
+          }
 
-            /* TODO */
-            /* Handle the key up */
-            if (event.keyCode == 37){
-                player.stop(1);
-            }else if (event.keyCode == 39){
-                player.stop(2);
-            }
-
+          if (event.keyCode == 37) {
+            playerInstance.stop(1);
+            Socket.playerKeys(roomNum, playerSlot, 37, "keyup");
+          } else if (event.keyCode == 39) {
+            playerInstance.stop(2);
+            Socket.playerKeys(roomNum, playerSlot, 39, "keyup");
+          }
         });
 
-        $(document).on('click', function(event) {
-            console.log('Platform: x=' + event.clientX + ', y=' + event.clientY);
+        const playerEventSocket = io();
+        if (playerEventSocket) {
+          playerEventSocket.on("game keys event", (message) => {
+            const { room, player, keyCode, event } = JSON.parse(message);
+            console.log("game keys event", JSON.parse(message));
+
+            const handlePlayerMovement = (playerInstance) => {
+              switch (event) {
+                case "keydown":
+                  switch (keyCode) {
+                    case 37:
+                      playerInstance.move(1);
+                      break;
+                    case 39:
+                      playerInstance.move(2);
+                      break;
+                    case 38:
+                      playerInstance.jump();
+                      playerInstance.setInCollider(false);
+                      break;
+                  }
+                  break;
+                case "keyup":
+                  switch (keyCode) {
+                    case 37:
+                      playerInstance.stop(1);
+                      break;
+                    case 39:
+                      playerInstance.stop(2);
+                      break;
+                  }
+                  break;
+              }
+            };
+
+            switch (player) {
+              case 1:
+                handlePlayerMovement(player1);
+                break;
+              case 2:
+                handlePlayerMovement(player2);
+                break;
+            }
+          });
+        }
+        $(document).on("click", function (event) {
+          console.log("Platform: x=" + event.clientX + ", y=" + event.clientY);
         });
 
         /* Start the game */
         requestAnimationFrame(doFrame);
-    });
+      });
     </script>
-</body>
+  </body>
 </html>
