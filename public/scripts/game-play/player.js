@@ -93,10 +93,13 @@ const Player = function (ctx, x, y, gameArea) {
   const sprite = Sprite(ctx, x, y);
 
   // The sprite object is configured for the player sprite here.
-  sprite
-    .setSequence(sequences.idle)
-    .setScale(0.75)
-    .useSheet("./assets/player_sprite.png");
+  let playerSprites = {
+    movement: sprite
+      .setSequence(sequences.idle)
+      .setScale(0.75)
+      .useSheet("./assets/player_sprite.png"),
+    attack: {},
+  };
 
   // This is the moving direction, which can be a number from 0 to 4:
   // - `0` - not moving
@@ -142,7 +145,7 @@ const Player = function (ctx, x, y, gameArea) {
 
   const trap = (x, y) => {
     isTrapped = true;
-    sprite.setXY(x, y);
+    playerSprites.movement.setXY(x, y);
     setTimeout(() => {
       isTrapped = false;
     }, 5000);
@@ -155,10 +158,10 @@ const Player = function (ctx, x, y, gameArea) {
     //  {room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
 
     Socket.playerMovement(room, slot, "updatePos", {
-      x: sprite.getXY().x,
-      y: sprite.getXY().y,
+      x: playerSprites.movement.getXY().x,
+      y: playerSprites.movement.getXY().y,
     });
-    // console.log("Player Movement Updated", sprite.getXY());
+    // console.log("Player Movement Updated",playerSprites.movement.getXY());
   };
 
   // This function sets the player's moving direction.
@@ -168,10 +171,10 @@ const Player = function (ctx, x, y, gameArea) {
       if (!(getInJump() || getInFall())) {
         switch (dir) {
           case 1:
-            sprite.setSequence(sequences.runLeft);
+            playerSprites.movement.setSequence(sequences.runLeft);
             break;
           case 2:
-            sprite.setSequence(sequences.run);
+            playerSprites.movement.setSequence(sequences.run);
             break;
         }
       }
@@ -186,10 +189,10 @@ const Player = function (ctx, x, y, gameArea) {
       if (!(getInJump() || getInFall())) {
         switch (dir) {
           case 1:
-            sprite.setSequence(sequences.idleLeft);
+            playerSprites.movement.setSequence(sequences.idleLeft);
             break;
           case 2:
-            sprite.setSequence(sequences.idle);
+            playerSprites.movement.setSequence(sequences.idle);
             break;
         }
       }
@@ -201,11 +204,11 @@ const Player = function (ctx, x, y, gameArea) {
   const jump = function () {
     if (!(getInJump() || getInFall())) {
       inJump = true;
-      jumpingY = sprite.getXY().y;
+      jumpingY = playerSprites.movement.getXY().y;
       if (sprite.getOrientation() == "left") {
-        sprite.setSequence(sequences.jumpLeft);
+        playerSprites.movement.setSequence(sequences.jumpLeft);
       } else {
-        sprite.setSequence(sequences.jump);
+        playerSprites.movement.setSequence(sequences.jump);
       }
     }
   };
@@ -214,9 +217,9 @@ const Player = function (ctx, x, y, gameArea) {
     inJump = false;
     inFall = true;
     if (sprite.getOrientation() == "left") {
-      sprite.setSequence(sequences.fallLeft);
+      playerSprites.movement.setSequence(sequences.fallLeft);
     } else {
-      sprite.setSequence(sequences.fall);
+      playerSprites.movement.setSequence(sequences.fall);
     }
   };
 
@@ -241,7 +244,7 @@ const Player = function (ctx, x, y, gameArea) {
   // - `time` - The timestamp when this function is called
   const update = function (time) {
     /* Update the player if the player is moving */
-    let { x, y } = sprite.getXY();
+    let { x, y } = playerSprites.movement.getXY();
     if (transporting) {
       x = transportX;
       y = transportY;
@@ -268,10 +271,10 @@ const Player = function (ctx, x, y, gameArea) {
         /* Change sprite mid-air */
         switch (direction) {
           case 1:
-            sprite.setSequence(sequences.jumpLeft);
+            playerSprites.movement.setSequence(sequences.jumpLeft);
             break;
           case 2:
-            sprite.setSequence(sequences.jump);
+            playerSprites.movement.setSequence(sequences.jump);
             break;
         }
       }
@@ -286,10 +289,10 @@ const Player = function (ctx, x, y, gameArea) {
         /* Change sprite mid-air */
         switch (direction) {
           case 1:
-            sprite.setSequence(sequences.fallLeft);
+            playerSprites.movement.setSequence(sequences.fallLeft);
             break;
           case 2:
-            sprite.setSequence(sequences.fall);
+            playerSprites.movement.setSequence(sequences.fall);
             break;
         }
       }
@@ -298,29 +301,29 @@ const Player = function (ctx, x, y, gameArea) {
         inFall = false;
         if (sprite.getOrientation() == "left") {
           if (direction != 0) {
-            sprite.setSequence(sequences.runLeft);
+            playerSprites.movement.setSequence(sequences.runLeft);
           } else {
-            sprite.setSequence(sequences.idleLeft);
+            playerSprites.movement.setSequence(sequences.idleLeft);
           }
         } else {
           if (direction != 0) {
-            sprite.setSequence(sequences.run);
+            playerSprites.movement.setSequence(sequences.run);
           } else {
-            sprite.setSequence(sequences.idle);
+            playerSprites.movement.setSequence(sequences.idle);
           }
         }
       }
     }
 
-    if (gameArea.isPointInBox(x, y)) sprite.setXY(x, y);
+    if (gameArea.isPointInBox(x, y)) playerSprites.movement.setXY(x, y);
     /* Update the sprite object */
-    sprite.update(time);
+    playerSprites.movement.update(time);
   };
 
   // The methods are returned as an object here.
   return {
-    getXY: sprite.getXY,
-    setXY: sprite.setXY,
+    getXY: playerSprites.movement.getXY,
+    setXY: playerSprites.movement.setXY,
     move: move,
     stop: stop,
     jump: jump,
@@ -332,8 +335,8 @@ const Player = function (ctx, x, y, gameArea) {
     getInCollider: getInCollider,
     speedUp: speedUp,
     slowDown: slowDown,
-    getBoundingBox: sprite.getBoundingBox,
-    draw: sprite.draw,
+    getBoundingBox: playerSprites.movement.getBoundingBox,
+    draw: playerSprites.movement.draw,
     updateSocketPlayerMovement: updateSocketPlayerMovement,
     update: update,
     trap,

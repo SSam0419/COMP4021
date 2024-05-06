@@ -231,7 +231,11 @@
         function playerGravity(player, now) {
           //handle coin
           if (
-            player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)
+            player
+              .getBoundingBox()
+              .isPointInBox(coin.getXY().x, coin.getXY().y) &&
+            !player.getInFall() &&
+            !player.getInJump()
           ) {
             console.log("Player has collected a coin");
             const { roomNum, playerSlot } = GameroomConfig.getConfig();
@@ -243,7 +247,9 @@
           if (
             player
               .getBoundingBox()
-              .isPointInBox(trap.getXY().x, trap.getXY().y - 15)
+              .isPointInBox(trap.getXY().x, trap.getXY().y - 15) &&
+            !player.getInFall() &&
+            !player.getInJump()
           ) {
             console.log("Player is trapped");
             player.trap(trap.getXY().x, trap.getXY().y - 15);
