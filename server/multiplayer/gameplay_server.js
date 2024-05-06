@@ -75,16 +75,16 @@ const GameServer = function () {
     teleporterAge[1] = randomAge(transporterMaxAge);
     teleporterAge[2] = randomAge(transporterMaxAge);
     trapAge = randomAge(trapMaxAge);
-    setTimeout(() => gameTick(), 1000);
+    setTimeout(() => gameTick(), 500);
     // gameTick();
   };
 
   // Natural Update By Time
   const gameTick = function () {
     gameStartTime += 1;
-    coinAge += 1000;
-    teleporterAge[1] += 1000;
-    teleporterAge[2] += 1000;
+    coinAge += 150;
+    teleporterAge[1] += 500;
+    teleporterAge[2] += 500;
     trapAge += 1000;
 
     if (coinAge >= coinMaxAge) {
@@ -153,7 +153,7 @@ const GameServer = function () {
   };
 
   const randomAge = function (maxAge) {
-    return maxAge - (Math.random() * maxAge) / 2;
+    return maxAge - (Math.random() * maxAge) / 4;
   };
 
   const setPlayer = function (username, slot) {
@@ -169,12 +169,39 @@ const GameServer = function () {
     }
   };
 
+  const playerCollectedCoin = function (player) {
+    // log event
+    console.log("Player " + player + " collected a coin");
+    playerStatus[player].score += 1;
+    coinCoord = randomCoinPoint();
+    coinAge = randomAge(coinMaxAge);
+  };
+
+  const playerTeleported = function (player, teleporterSteppedOn) {
+    // log event
+    console.log(
+      "Player " + player + " teleported",
+      " stepepd on ",
+      teleporterSteppedOn
+    );
+  };
+
+  const playerTrapped = function (player) {
+    // log event
+    console.log("Player " + player + " trapped");
+    //reset trap location
+    // trapCoord = platformCoordinates[randomPlatformIdx(3)];
+  };
+
   // The methods are returned as an object here.
   return {
     initialize: initialize,
     setSocket: setSocket,
     doCommand: doCommand,
     setPlayer: setPlayer,
+    playerCollectedCoin,
+    playerTeleported,
+    playerTrapped,
   };
 };
 

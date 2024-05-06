@@ -130,6 +130,7 @@ io.on("connection", (socket) => {
   // Given the username, return the gameroom and player
   // expected message: {username: "username"}
   socket.on("get game config", (message) => {
+    console.log("get game config socket triggered");
     const username = socket.request.session.user.username;
     let roomNum,
       player = -1;
@@ -143,8 +144,8 @@ io.on("connection", (socket) => {
     }
 
     gameServers[roomNum].setSocket(username, socket);
-    console.log("socket attached " + username);
     toReturn = { roomNum, player };
+    console.log("game config : ", toReturn);
     socket.emit("game config", JSON.stringify(toReturn));
   });
 
@@ -152,7 +153,6 @@ io.on("connection", (socket) => {
   // expected message: {room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
   socket.on("game command", (message) => {
     const { room, player, command, parameters } = JSON.parse(message);
-    console.log("game command received", room, player, command, parameters);
     if (gameRooms[room]["player1"] && gameRooms[room]["player2"]) {
       gameServers[room].doCommand(command, player, parameters);
     }
@@ -164,6 +164,19 @@ io.on("connection", (socket) => {
       "game keys event",
       JSON.stringify({ room, player, keyCode, event })
     );
+  });
+
+  socket.on("coin collected", (message) => {
+    const { room, player } = JSON.parse(message);
+    gameServers[room].playerCollectedCoin(player);
+  });
+  socket.on("player teleport", (message) => {
+    const { room, player, teleporterSteppedOn } = JSON.parse(message);
+    gameServers[room].playerTeleported(player, teleporterSteppedOn);
+  });
+  socket.on("player trap", (message) => {
+    const { room, player } = JSON.parse(message);
+    gameServers[room].playerTrapped(player);
   });
 });
 

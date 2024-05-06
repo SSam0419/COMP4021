@@ -110,7 +110,7 @@
         //** All of this should be updated through websocket in do frame
         let gameStartTime = 0; // The timestamp when the game starts
         let collectedcoins = 0; // The number of coins collected in the game
-        let transporterCooldown = 5000; // The cooldown for using the transporter
+        let transporterCooldown = 3500; // The cooldown for using the transporter
         let transporterTimeStamp = 0;
 
         /* Create the game area */
@@ -149,19 +149,19 @@
         let colliders = new Array(platforms.length + 1).fill(false); // The colliders
 
         //Should decide position base on which player
-        const player1 = Player(context, -1, -1, gameArea); // The player
-        const player2 = Player(context, -1, -1, gameArea); // The player
+        const player1 = Player(context, 200, 580, gameArea); // The player
+        const player2 = Player(context, 400, 580, gameArea); // The player
         let playerInstance = null;
 
         //Coin coordinates should store in server
-        const coin = Coin(context, -1, -1); // The coin
+        const coin = Coin(context, -5, -5); // The coin
 
         let transporters = {
-          1: Transporter(context, -1, -1),
-          2: Transporter(context, -1, -1),
+          1: Transporter(context, -5, -5),
+          2: Transporter(context, -5, -5),
         };
 
-        const trap = Trap(context, -1, -1); // The trap
+        const trap = Trap(context, -5, -5); // The trap
 
         /* The main processing of the game */
         function doFrame(now) {
@@ -210,11 +210,6 @@
             trap.update(now);
             playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
 
-            /*
-            if (player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)){
-                Socket.getCoin();
-            }*/
-
             playerGravity(player1, now);
             playerGravity(player2, now);
 
@@ -234,31 +229,55 @@
         }
 
         function playerGravity(player, now) {
+          //handle coin
           if (
-            player.getBoundingBox().isPointInBox(trap.getXY().x, trap.getXY().y)
+            player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)
+          ) {
+            console.log("Player has collected a coin");
+            const { roomNum, playerSlot } = GameroomConfig.getConfig();
+            coin.setXY(-5, -5);
+            Socket.playerCollectedCoin(roomNum, playerSlot);
+          }
+
+          //handle trap
+          if (
+            player
+              .getBoundingBox()
+              .isPointInBox(trap.getXY().x, trap.getXY().y - 15)
           ) {
             console.log("Player is trapped");
             player.trap(trap.getXY().x, trap.getXY().y - 15);
             player.stop(1);
+            // now reset trap position
+            // Socket.playerTrapped(roomNum, playerSlot);
+            return;
           }
 
+          //handle transporter
           for (let i = 1; i <= 2; i++) {
             if (
               player
                 .getBoundingBox()
                 .isPointInBox(
                   transporters[i].getXY().x,
-                  transporters[i].getXY().y
-                ) &&
-              now - transporterTimeStamp > transporterCooldown
+                  transporters[i].getXY().y - 30
+                )
             ) {
-              transporterTimeStamp = now;
-              const transporter = transporters[i == 1 ? 2 : 1];
-              player.transport(
-                transporter.getXY().x,
-                transporter.getXY().y,
-                now
-              );
+              if (now - transporterTimeStamp < transporterCooldown) {
+                console.log("Transporter is on cooldown");
+              } else {
+                console.log("Player is teleported");
+                transporterTimeStamp = now;
+                const transporter = transporters[i == 1 ? 2 : 1];
+                player.transport(
+                  transporter.getXY().x,
+                  transporter.getXY().y - 30,
+                  now
+                );
+              }
+
+              // const { roomNum, playerSlot } = GameroomConfig.getConfig();
+              // Socket.playerTeleported(roomNum, playerSlot, i);
             }
           }
 
@@ -312,11 +331,6 @@
 
         /* Handle the keyup of arrow keys and spacebar */
         $(document).on("keyup", function (event) {
-          let playerInstance = player1;
-          if (playerSlot === 2) {
-            playerInstance = player2;
-          }
-
           if (event.keyCode == 37) {
             playerInstance.stop(1);
             Socket.playerKeys(roomNum, playerSlot, 37, "keyup");
@@ -330,7 +344,6 @@
         if (playerEventSocket) {
           playerEventSocket.on("game keys event", (message) => {
             const { room, player, keyCode, event } = JSON.parse(message);
-            console.log("game keys event", JSON.parse(message));
 
             const handlePlayerMovement = (playerInstance) => {
               switch (event) {
@@ -372,7 +385,10 @@
           });
         }
         $(document).on("click", function (event) {
-          console.log("Platform: x=" + event.clientX + ", y=" + event.clientY);
+          console.log("=================");
+          console.log(
+            "Position clicked: x=" + event.clientX + ", y=" + event.clientY
+          );
           console.log("Trap: x=" + trap.getXY().x + ", y=" + trap.getXY().y);
           console.log(
             "PlayerInstance: x=" +
@@ -380,6 +396,20 @@
               ", y=" +
               playerInstance.getXY().y
           );
+          console.log(
+            "Transporter 1: x=" +
+              transporters[1].getXY().x +
+              ", y=" +
+              transporters[1].getXY().y
+          );
+          console.log(
+            "Transporter 2: x=" +
+              transporters[2].getXY().x +
+              ", y=" +
+              transporters[2].getXY().y
+          );
+          console.log("Coin: x=" + coin.getXY().x + ", y=" + coin.getXY().y);
+          console.log("=================");
         });
 
         /* Start the game */

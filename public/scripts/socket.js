@@ -105,17 +105,29 @@ const Socket = (function () {
   };
 
   const playerMovement = function (room, player, command, parameters) {
-    if(getSocket() && room && player){
+    if (getSocket() && room && player) {
       message = { room, player, command, parameters };
       socket.emit("game command", JSON.stringify(message));
-    }else{
-      console.log("Socket not initialized")
+    } else {
+      console.log("Socket not initialized");
     }
   };
 
   const playerKeys = function (room, player, keyCode, event) {
     message = { room, player, keyCode, event };
     socket.emit("game keys", JSON.stringify(message));
+  };
+  const playerCollectedCoin = function (room, player) {
+    message = { room, player };
+    socket.emit("coin collected", JSON.stringify(message));
+  };
+  const playerTeleported = function (room, player, teleporterSteppedOn) {
+    message = { room, player, teleporterSteppedOn };
+    socket.emit("player teleport", JSON.stringify(message));
+  };
+  const playerTrapped = function (room, player) {
+    message = { room, player };
+    socket.emit("player trap", JSON.stringify(message));
   };
 
   return {
@@ -129,5 +141,8 @@ const Socket = (function () {
     startGame,
     playerMovement,
     playerKeys,
+    playerCollectedCoin,
+    playerTeleported,
+    playerTrapped,
   };
 })();

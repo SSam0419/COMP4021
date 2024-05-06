@@ -147,7 +147,7 @@ const Player = function (ctx, x, y, gameArea) {
       isTrapped = false;
     }, 5000);
   };
-  getIsTrapped = () => {
+  const getIsTrapped = () => {
     return isTrapped;
   };
 
@@ -242,6 +242,12 @@ const Player = function (ctx, x, y, gameArea) {
   const update = function (time) {
     /* Update the player if the player is moving */
     let { x, y } = sprite.getXY();
+    if (transporting) {
+      x = transportX;
+      y = transportY;
+      jumpingY = transportY;
+      transporting = false;
+    }
 
     if (direction != 0) {
       /* Move the player */
@@ -287,6 +293,7 @@ const Player = function (ctx, x, y, gameArea) {
             break;
         }
       }
+
       if (getInCollider()) {
         inFall = false;
         if (sprite.getOrientation() == "left") {
@@ -303,13 +310,6 @@ const Player = function (ctx, x, y, gameArea) {
           }
         }
       }
-    }
-
-    if (transporting) {
-      x = transportX;
-      y = transportY;
-      jumpingY = transportY;
-      transporting = false;
     }
 
     if (gameArea.isPointInBox(x, y)) sprite.setXY(x, y);
