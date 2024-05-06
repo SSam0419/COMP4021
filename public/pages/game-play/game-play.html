@@ -203,8 +203,12 @@
 
             /* Update the sprites */
             coin.update(now);
+
             player1.update(now);
             player2.update(now);
+            player1.udpateAttackRight(now);
+            player2.udpateAttackRight(now);
+
             transporters[1].update(now);
             transporters[2].update(now);
             trap.update(now);
@@ -220,6 +224,17 @@
             coin.draw();
             player1.draw();
             player2.draw();
+
+            // attack left and right
+            if (player1.getIsAttacking()) {
+              player1.drawAttackRight();
+            }
+            if (player2.getIsAttacking()) {
+              player2.drawAttackRight();
+            }
+
+            // player1.drawAttackLeft();
+
             transporters[1].draw();
             transporters[2].draw();
             trap.draw();
@@ -322,6 +337,9 @@
         /* Handle the keydown of arrow keys and spacebar */
 
         $(document).on("keydown", function (event) {
+          if (playerInstance.getIsAttacking()) {
+            return console.log("attacking");
+          }
           if (event.keyCode == 37) {
             playerInstance.move(1);
             Socket.playerKeys(roomNum, playerSlot, 37, "keydown");
@@ -332,6 +350,12 @@
             playerInstance.jump();
             playerInstance.setInCollider(false);
             Socket.playerKeys(roomNum, playerSlot, 38, "keydown");
+          } else if (event.keyCode == 65) {
+            // playerInstance.stop(1);
+            // playerInstance.attackLeft();
+          } else if (event.keyCode == 68) {
+            playerInstance.stop(2);
+            playerInstance.attackRight();
           }
         });
 

@@ -2,9 +2,12 @@
 // - `ctx` - A canvas context for drawing
 // - `x` - The initial x position of the player
 // - `y` - The initial y position of the player
+
 // - `gameArea` - The bounding box of the game area
 const Player = function (ctx, x, y, gameArea) {
   let isTrapped = false;
+  let isAttacking = false;
+  let isAttackCooldown = false;
   // This is the sprite sequences of the player facing different directions.
   const sequences = {
     idle: {
@@ -88,9 +91,28 @@ const Player = function (ctx, x, y, gameArea) {
       orientation: "left",
     },
   };
-
+  const attackRightSequences = {
+    x: 0,
+    y: 48,
+    width: 160,
+    height: 63,
+    count: 4,
+    timing: 100,
+    loop: false,
+  };
+  const attackLeftSequences = {
+    x: 0,
+    y: 48,
+    width: 160,
+    height: 63,
+    count: 4,
+    timing: 100,
+    loop: true,
+  };
   // This is the sprite object of the player created from the Sprite module.
   const sprite = Sprite(ctx, x, y);
+  const attackLeftSprite = Sprite(ctx, x, y);
+  const attackRightSprite = Sprite(ctx, x, y);
 
   // The sprite object is configured for the player sprite here.
   let playerSprites = {
@@ -98,7 +120,14 @@ const Player = function (ctx, x, y, gameArea) {
       .setSequence(sequences.idle)
       .setScale(0.75)
       .useSheet("./assets/player_sprite.png"),
-    attack: {},
+    attackRight: attackRightSprite
+      .setSequence(attackRightSequences)
+      .setScale(0.75)
+      .useSheet("./assets/Attack1.png"),
+    attackLeft: attackLeftSprite
+      .setSequence(attackLeftSequences)
+      .setScale(0.75)
+      .useSheet("./assets/Attack2.png"),
   };
 
   // This is the moving direction, which can be a number from 0 to 4:
@@ -198,6 +227,57 @@ const Player = function (ctx, x, y, gameArea) {
       }
       direction = 0;
     }
+  };
+
+  const attackLeft = function () {
+    console.log("attacking left");
+    // no attack left sprite at the moment
+    // playerSprites.attackLeft.setXY(
+    //   playerSprites.movement.getXY().x,
+    //   playerSprites.movement.getXY().y
+    // );
+    // playerSprites.attackLeft.draw();
+  };
+
+  const getIsAttacking = () => {
+    return isAttacking;
+  };
+  const getIsAttackCooldown = () => {
+    return isAttackCooldown;
+  };
+  const attackRight = function () {
+    console.log("attacking right");
+
+    if (getIsAttackCooldown()) return console.log("attack on cooldown");
+    if (getIsTrapped()) return;
+    if (getInJump() || getInFall())
+      return console.log("cant attack while jumping");
+    if (getIsAttacking()) return console.log("cant attack while attacking");
+
+    isAttacking = true;
+    isAttackCooldown = true;
+    playerSprites.attackRight.setSequence(attackRightSequences);
+    playerSprites.attackRight.setXY(
+      playerSprites.movement.getXY().x,
+      playerSprites.movement.getXY().y - 5
+    );
+    // hide player sprite
+    playerSprites.movement.setXY(-100, -100);
+
+    setTimeout(() => {
+      isAttacking = false;
+      playerSprites.movement.setXY(
+        playerSprites.attackRight.getXY().x,
+        playerSprites.attackRight.getXY().y
+      );
+      playerSprites.movement.setSequence(sequences.idle);
+      // remove attack sprite
+      playerSprites.attackRight.setXY(-100, -100);
+    }, 700);
+
+    setTimeout(() => {
+      isAttackCooldown = false;
+    }, 5000);
   };
 
   // JUMP FUNCTIONS
@@ -320,6 +400,14 @@ const Player = function (ctx, x, y, gameArea) {
     playerSprites.movement.update(time);
   };
 
+  const udpateAttackRight = function (time) {
+    playerSprites.attackRight.update(time);
+  };
+
+  const udpateAttackLeft = function (time) {
+    playerSprites.attackLeft.update(time);
+  };
+
   // The methods are returned as an object here.
   return {
     getXY: playerSprites.movement.getXY,
@@ -337,9 +425,16 @@ const Player = function (ctx, x, y, gameArea) {
     slowDown: slowDown,
     getBoundingBox: playerSprites.movement.getBoundingBox,
     draw: playerSprites.movement.draw,
+    drawAttackRight: playerSprites.attackRight.draw,
+    drawAttackLeft: playerSprites.attackLeft.draw,
     updateSocketPlayerMovement: updateSocketPlayerMovement,
     update: update,
+    udpateAttackRight,
+    udpateAttackLeft,
     trap,
     getIsTrapped,
+    attackLeft,
+    attackRight,
+    getIsAttacking,
   };
 };
