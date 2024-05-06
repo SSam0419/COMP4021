@@ -4,6 +4,7 @@
 // - `y` - The initial y position of the player
 // - `gameArea` - The bounding box of the game area
 const Player = function (ctx, x, y, gameArea) {
+  let isTrapped = false;
   // This is the sprite sequences of the player facing different directions.
   const sequences = {
     idle: {
@@ -137,6 +138,17 @@ const Player = function (ctx, x, y, gameArea) {
 
   const getInCollider = function () {
     return inCollider;
+  };
+
+  const trap = (x, y) => {
+    isTrapped = true;
+    sprite.setXY(x, y);
+    setTimeout(() => {
+      isTrapped = false;
+    }, 5000);
+  };
+  getIsTrapped = () => {
+    return isTrapped;
   };
 
   const updateSocketPlayerMovement = function (room, slot) {
@@ -324,5 +336,7 @@ const Player = function (ctx, x, y, gameArea) {
     draw: sprite.draw,
     updateSocketPlayerMovement: updateSocketPlayerMovement,
     update: update,
+    trap,
+    getIsTrapped,
   };
 };
