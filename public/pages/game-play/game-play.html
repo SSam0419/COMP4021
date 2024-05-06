@@ -151,7 +151,7 @@
         //Should decide position base on which player
         const player1 = Player(context, -1, -1, gameArea); // The player
         const player2 = Player(context, -1, -1, gameArea); // The player
-        let playerInstance = null
+        let playerInstance = null;
 
         //Coin coordinates should store in server
         const coin = Coin(context, -1, -1); // The coin
@@ -165,9 +165,9 @@
 
         /* The main processing of the game */
         function doFrame(now) {
-          if (!initComplete){
-            ({roomNum, playerSlot} = GameroomConfig.getConfig());
-            if(roomNum && playerSlot){
+          if (!initComplete) {
+            ({ roomNum, playerSlot } = GameroomConfig.getConfig());
+            if (roomNum && playerSlot) {
               initComplete = true;
 
               playerInstance = player1;
@@ -209,15 +209,14 @@
             transporters[2].update(now);
             trap.update(now);
             playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
-            
+
             /*
             if (player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)){
                 Socket.getCoin();
             }*/
 
-            playerGravity(player1)
-            playerGravity(player2)
-            
+            playerGravity(player1, now);
+            playerGravity(player2, now);
 
             /* Clear the screen */
             context.clearRect(0, 0, cv.width, cv.height);
@@ -234,43 +233,64 @@
           requestAnimationFrame(doFrame);
         }
 
-
-        function playerGravity(player){
-          for (let i = 0; i < transporters.length; i++){
-            if (player.getBoundingBox().isPointInBox(transporters[i].getXY().x, transporters[i].getXY().y) && (now - transporterTimeStamp > transporterCooldown)){
-                transporterTimeStamp = now;
-                if (i == 0){
-                    player.transport(transporters[1].getXY().x, transporters[1].getXY().y, now);
-                }else{
-                    player.transport(transporters[0].getXY().x, transporters[0].getXY().y, now);
-                }
+        function playerGravity(player, now) {
+          for (let i = 1; i <= 2; i++) {
+            if (
+              player
+                .getBoundingBox()
+                .isPointInBox(
+                  transporters[i].getXY().x,
+                  transporters[i].getXY().y
+                ) &&
+              now - transporterTimeStamp > transporterCooldown
+            ) {
+              transporterTimeStamp = now;
+              if (i == 1) {
+                player.transport(
+                  transporters[2].getXY().x,
+                  transporters[2].getXY().y,
+                  now
+                );
+              } else {
+                player.transport(
+                  transporters[1].getXY().x,
+                  transporters[1].getXY().y,
+                  now
+                );
+              }
             }
-        }
+          }
 
-
-        for (let i = 0; i < colliders.length - 1; i++){
-            if(platforms[i].getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y + 25)){
-                colliders[i] = true;
-            }else{
-                colliders[i] = false;
+          for (let i = 0; i < colliders.length - 1; i++) {
+            if (
+              platforms[i]
+                .getBoundingBox()
+                .isPointInBox(player.getXY().x, player.getXY().y + 25)
+            ) {
+              colliders[i] = true;
+            } else {
+              colliders[i] = false;
             }
-        }
+          }
 
-        if (floor.getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y + 25)){
+          if (
+            floor
+              .getBoundingBox()
+              .isPointInBox(player.getXY().x, player.getXY().y + 25)
+          ) {
             colliders[colliders.length - 1] = true;
-        }else{
+          } else {
             colliders[colliders.length - 1] = false;
-        }
+          }
 
-        if (player.getInFall() || !player.getInJump()){
-            if(colliders.some(value => value === true)){
-                player.setInCollider(true);
-            }else{
-                player.setInCollider(false);
+          if (player.getInFall() || !player.getInJump()) {
+            if (colliders.some((value) => value === true)) {
+              player.setInCollider(true);
+            } else {
+              player.setInCollider(false);
             }
+          }
         }
-        }
-
 
         // No more game start to trigger
         /* Handle the keydown of arrow keys and spacebar */

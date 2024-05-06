@@ -153,14 +153,13 @@ io.on("connection", (socket) => {
   socket.on("game command", (message) => {
     const { room, player, command, parameters } = JSON.parse(message);
     console.log("game command received", room, player, command, parameters);
-    if(gameRooms[room]['player1'] && gameRooms[room]['player2']){
+    if (gameRooms[room]["player1"] && gameRooms[room]["player2"]) {
       gameServers[room].doCommand(command, player, parameters);
     }
   });
 
   socket.on("game keys", (message) => {
     const { room, player, keyCode, event } = JSON.parse(message);
-    console.log("game keys received", room, player, keyCode, event);
     io.emit(
       "game keys event",
       JSON.stringify({ room, player, keyCode, event })
