@@ -246,11 +246,7 @@
         function playerGravity(player, now) {
           //handle coin
           if (
-            player
-              .getBoundingBox()
-              .isPointInBox(coin.getXY().x, coin.getXY().y) &&
-            !player.getInFall() &&
-            !player.getInJump()
+            player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)
           ) {
             console.log("Player has collected a coin");
             const { roomNum, playerSlot } = GameroomConfig.getConfig();

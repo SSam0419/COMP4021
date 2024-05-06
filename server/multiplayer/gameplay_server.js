@@ -9,7 +9,7 @@ const GameServer = function () {
   let transporterTimeStamp = 0;
 
   const totalGameTime = 180; // Total game time in seconds
-  const coinMaxAge = 3000; // The maximum age of the coins in milliseconds
+  const coinMaxAge = 10000; // The maximum age of the coins in milliseconds
   const transporterMaxAge = 15000; // The maximum age of the transporter in milliseconds
   const trapMaxAge = 6000;
   const maxScore = 10; // Score to win
