@@ -269,35 +269,40 @@
             // Socket.playerTrapped(roomNum, playerSlot);
             return;
           }
-          if (player.getIsTrapped()) return;
-          //handle transporter
-          for (let i = 1; i <= 2; i++) {
-            if (
-              player
-                .getBoundingBox()
-                .isPointInBox(
-                  transporters[i].getXY().x,
-                  transporters[i].getXY().y - 30
-                )
-            ) {
-              if (now - transporterTimeStamp < transporterCooldown) {
-                console.log("Transporter is on cooldown");
-              } else {
-                console.log("Player is teleported");
-                transporterTimeStamp = now;
-                const transporter = transporters[i == 1 ? 2 : 1];
-                player.transport(
-                  transporter.getXY().x,
-                  transporter.getXY().y - 30,
-                  now
-                );
-              }
 
-              // const { roomNum, playerSlot } = GameroomConfig.getConfig();
-              // Socket.playerTeleported(roomNum, playerSlot, i);
+          //handle transporter
+          if (
+            !player.getInFall() &&
+            !player.getInJump() &&
+            !player.getIsTrapped()
+          ) {
+            for (let i = 1; i <= 2; i++) {
+              if (
+                player
+                  .getBoundingBox()
+                  .isPointInBox(
+                    transporters[i].getXY().x,
+                    transporters[i].getXY().y - 30
+                  )
+              ) {
+                if (now - transporterTimeStamp < transporterCooldown) {
+                  console.log("Transporter is on cooldown");
+                } else {
+                  console.log("Player is teleported");
+                  transporterTimeStamp = now;
+                  const transporter = transporters[i == 1 ? 2 : 1];
+                  player.transport(
+                    transporter.getXY().x,
+                    transporter.getXY().y - 30,
+                    now
+                  );
+                }
+
+                // const { roomNum, playerSlot } = GameroomConfig.getConfig();
+                // Socket.playerTeleported(roomNum, playerSlot, i);
+              }
             }
           }
-
           for (let i = 0; i < colliders.length - 1; i++) {
             if (
               platforms[i]
