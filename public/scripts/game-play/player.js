@@ -196,6 +196,7 @@ const Player = function (ctx, x, y, gameArea) {
   // This function sets the player's moving direction.
   // - `dir` - the moving direction (1: Left, 2: Right, 3: Up)
   const move = function (dir) {
+    if (isTrapped) return console.log("trapping");
     if (dir >= 1 && dir <= 4 && dir != direction) {
       if (!(getInJump() || getInFall())) {
         switch (dir) {
@@ -282,6 +283,7 @@ const Player = function (ctx, x, y, gameArea) {
 
   // JUMP FUNCTIONS
   const jump = function () {
+    if (isTrapped) return console.log("trapping");
     if (!(getInJump() || getInFall())) {
       inJump = true;
       jumpingY = playerSprites.movement.getXY().y;
