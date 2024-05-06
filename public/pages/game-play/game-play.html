@@ -263,13 +263,13 @@
             !player.getInJump()
           ) {
             console.log("Player is trapped");
-            player.trap(trap.getXY().x, trap.getXY().y - 15);
             player.stop(1);
+            player.trap(trap.getXY().x, trap.getXY().y - 25);
             // now reset trap position
             // Socket.playerTrapped(roomNum, playerSlot);
             return;
           }
-
+          if (player.getIsTrapped()) return;
           //handle transporter
           for (let i = 1; i <= 2; i++) {
             if (
