@@ -150,8 +150,8 @@
         let colliders = new Array(platforms.length + 1).fill(false); // The colliders
 
         //Should decide position base on which player
-        const player1 = Player(context, 100, 580, gameArea); // The player
-        const player2 = Player(context, 500, 580, gameArea); // The player
+        const player1 = Player(context, 100, 580, gameArea, 1); // The player
+        const player2 = Player(context, 500, 580, gameArea, 2); // The player
         let playerInstance = null;
 
         //Coin coordinates should store in server
@@ -209,6 +209,8 @@
             player2.update(now);
             player1.udpateAttackRight(now);
             player2.udpateAttackRight(now);
+            player1.udpateAttackLeft(now);
+            player2.udpateAttackLeft(now);
             player1.updateTakeHit(now);
             player2.updateTakeHit(now);
 
@@ -235,6 +237,12 @@
             if (player2.getIsRightAttacking()) {
               player2.drawAttackRight();
             }
+            if (player1.getIsLeftAttacking()) {
+              player1.drawAttackLeft();
+            }
+            if (player2.getIsLeftAttacking()) {
+              player2.drawAttackLeft();
+            }
 
             if (player1.getIsTakingHit()) {
               player1.drawTakingHit();
@@ -256,26 +264,35 @@
         function playerGravity(player, opponentPlayer, now) {
           //handle player right attack
           if (player.getIsRightAttacking()) {
-            console.log("Player is attacking");
-            console.log(
-              player.getRightAttackPosition().y,
-              opponentPlayer.getXY().y
-            );
-            console.log(
-              player.getRightAttackPosition().x,
-              opponentPlayer.getXY().x
-            );
+            console.log("Player is attacking right");
             if (
               Math.abs(
                 player.getRightAttackPosition().y - opponentPlayer.getXY().y
               ) < 15 &&
-              Math.abs(
-                player.getRightAttackPosition().x - opponentPlayer.getXY().x
-              ) < 50
+              // opponent is on the right within 50px
+              opponentPlayer.getXY().x - player.getRightAttackPosition().x <
+                50 &&
+              player.getRightAttackPosition().x - opponentPlayer.getXY().x < 0
             ) {
               console.log("Player attacked opponent");
               opponentPlayer.takeHit();
-              // Socket.playerAttacked(roomNum, playerSlot);
+            }
+          }
+
+          //handle player left attack
+          if (player.getIsLeftAttacking()) {
+            console.log("Player is attacking left");
+            if (
+              Math.abs(
+                player.getLeftAttackPosition().y - opponentPlayer.getXY().y
+              ) < 15 &&
+              // opponent is on the left within 50px
+              player.getLeftAttackPosition().x - opponentPlayer.getXY().x <
+                50 &&
+              opponentPlayer.getXY().x - player.getLeftAttackPosition().x < 0
+            ) {
+              console.log("Player attacked opponent");
+              opponentPlayer.takeHit();
             }
           }
 
@@ -378,7 +395,6 @@
           if (!initComplete) {
             return;
           }
-
           if (playerInstance.getIsRightAttacking()) {
             return console.log("attacking");
           }
@@ -399,8 +415,9 @@
             playerInstance.setInCollider(false);
             Socket.playerKeys(roomNum, playerSlot, 38, "keydown");
           } else if (event.keyCode == 65) {
-            // playerInstance.stop(1);
-            // playerInstance.attackLeft();
+            playerInstance.stop(1);
+            Socket.playerAttackLeft(roomNum, playerSlot);
+            playerInstance.attackLeft();
           } else if (event.keyCode == 68) {
             playerInstance.stop(2);
             Socket.playerAttackRight(roomNum, playerSlot);
@@ -454,7 +471,8 @@
                   playerInstance.stop(2);
                   playerInstance.attackRight();
                   break;
-                case "attackleft":
+                case "attackLeft":
+                  playerInstance.stop(1);
                   playerInstance.attackLeft();
                   break;
               }
