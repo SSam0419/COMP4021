@@ -10,6 +10,7 @@ const Player = function (ctx, x, y, gameArea) {
   let isAttackRightCooldown = false;
   let isAttackingLeft = false;
   let isAttackLeftCooldown = false;
+  let isTakingHit = false;
   // This is the sprite sequences of the player facing different directions.
   const sequences = {
     idle: {
@@ -111,11 +112,20 @@ const Player = function (ctx, x, y, gameArea) {
     timing: 100,
     loop: true,
   };
+  const deathSequences = {
+    x: 0,
+    y: 48,
+    width: 160,
+    height: 63,
+    count: 6,
+    timing: 100,
+    loop: false,
+  };
   // This is the sprite object of the player created from the Sprite module.
   const sprite = Sprite(ctx, x, y);
   const attackLeftSprite = Sprite(ctx, x, y);
   const attackRightSprite = Sprite(ctx, x, y);
-
+  const deathSprite = Sprite(ctx, x, y);
   // The sprite object is configured for the player sprite here.
   let playerSprites = {
     movement: sprite
@@ -130,6 +140,10 @@ const Player = function (ctx, x, y, gameArea) {
       .setSequence(attackLeftSequences)
       .setScale(0.75)
       .useSheet("./assets/Attack2.png"),
+    death: deathSprite
+      .setSequence(deathSequences)
+      .setScale(0.75)
+      .useSheet("./assets/Death.png"),
   };
 
   // This is the moving direction, which can be a number from 0 to 4:
@@ -252,6 +266,7 @@ const Player = function (ctx, x, y, gameArea) {
     return isAttackRightCooldown;
   };
   const attackRight = function () {
+    if (getIsTakingHit()) return console.log("taking hit");
     if (getIsRightAttackCooldown()) return console.log("attack on cooldown");
     if (getIsTrapped()) return;
     if (getInJump() || getInFall())
@@ -259,6 +274,7 @@ const Player = function (ctx, x, y, gameArea) {
     if (getIsRightAttacking())
       return console.log("cant attack while attacking");
     console.log("attacking right");
+
     isAttackingRight = true;
     isAttackRightCooldown = true;
     playerSprites.attackRight.setSequence(attackRightSequences);
@@ -283,6 +299,32 @@ const Player = function (ctx, x, y, gameArea) {
     setTimeout(() => {
       isAttackRightCooldown = false;
     }, 5000);
+  };
+
+  const getIsTakingHit = () => {
+    return isTakingHit;
+  };
+  const takeHit = function () {
+    console.log("taking hit!");
+    isTakingHit = true;
+    playerSprites.death.setSequence(deathSequences);
+    playerSprites.death.setXY(
+      playerSprites.movement.getXY().x,
+      playerSprites.movement.getXY().y - 5
+    );
+    // hide player sprite
+    playerSprites.movement.setXY(-1000, -1000);
+
+    setTimeout(() => {
+      isTakingHit = false;
+      playerSprites.movement.setXY(
+        playerSprites.death.getXY().x,
+        playerSprites.death.getXY().y
+      );
+      playerSprites.movement.setSequence(sequences.idle);
+      // remove attack sprite
+      playerSprites.death.setXY(-1000, -1000);
+    }, 3000);
   };
 
   // JUMP FUNCTIONS
@@ -413,6 +455,9 @@ const Player = function (ctx, x, y, gameArea) {
   const udpateAttackLeft = function (time) {
     playerSprites.attackLeft.update(time);
   };
+  const updateTakeHit = function (time) {
+    playerSprites.death.update(time);
+  };
 
   // The methods are returned as an object here.
   return {
@@ -433,15 +478,19 @@ const Player = function (ctx, x, y, gameArea) {
     draw: playerSprites.movement.draw,
     drawAttackRight: playerSprites.attackRight.draw,
     drawAttackLeft: playerSprites.attackLeft.draw,
+    drawTakingHit: playerSprites.death.draw,
     updateSocketPlayerMovement: updateSocketPlayerMovement,
     update: update,
     udpateAttackRight,
     udpateAttackLeft,
+    updateTakeHit,
     trap,
     getIsTrapped,
     attackLeft,
     attackRight,
     getIsRightAttacking,
     getRightAttackPosition,
+    takeHit,
+    getIsTakingHit,
   };
 };

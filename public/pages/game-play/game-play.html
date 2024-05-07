@@ -208,6 +208,8 @@
             player2.update(now);
             player1.udpateAttackRight(now);
             player2.udpateAttackRight(now);
+            player1.updateTakeHit(now);
+            player2.updateTakeHit(now);
 
             transporters[1].update(now);
             transporters[2].update(now);
@@ -231,6 +233,13 @@
             }
             if (player2.getIsRightAttacking()) {
               player2.drawAttackRight();
+            }
+
+            if (player1.getIsTakingHit()) {
+              player1.drawTakingHit();
+            }
+            if (player2.getIsTakingHit()) {
+              player2.drawTakingHit();
             }
 
             // player1.drawAttackLeft();
@@ -264,6 +273,7 @@
               ) < 50
             ) {
               console.log("Player attacked opponent");
+              opponentPlayer.takeHit();
               // Socket.playerAttacked(roomNum, playerSlot);
             }
           }
