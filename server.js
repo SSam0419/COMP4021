@@ -132,8 +132,7 @@ io.on("connection", (socket) => {
   socket.on("get game config", (message) => {
     console.log("get game config socket triggered");
     const username = socket.request.session.user.username;
-    let roomNum,
-      player = -1;
+    let roomNum, player = -1;
     for (let i = 1; i <= Object.keys(gameRooms).length; i++) {
       for (let j = 1; j <= 2; j++) {
         if (gameRooms[i][`player${j}`] === username) {
@@ -141,6 +140,10 @@ io.on("connection", (socket) => {
           player = j;
         }
       }
+    }
+    if(roomNum===-1 || gameServers[roomNum].isGameEnd()) {
+        console.log("Game ended")
+        return socket.emit('end game')
     }
 
     gameServers[roomNum].setSocket(username, socket);
@@ -197,6 +200,11 @@ io.on("connection", (socket) => {
     console.log(`player ${player} is trapped`);
     gameServers[room].playerTrapped(player);
   });
+  socket.on("leave gameplay", (message)=>{
+    const {room, player} = JSON.parse(message)
+    gameRooms[room][`player${player}`] = null
+    gameServers[room].deattachSocket(player)
+  })
 });
 
 // Use a web server to listen at port 8000

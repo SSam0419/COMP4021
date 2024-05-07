@@ -9,6 +9,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   let isAttacking = false;
   let isAttackCooldown = false;
   let isTakingHit = false;
+  let lastUpdate = 0;
   // This is the sprite sequences of the player facing different directions.
   const sequences = {
     idle: {
@@ -412,6 +413,11 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   // This function updates the player depending on his movement.
   // - `time` - The timestamp when this function is called
   const update = function (time) {
+    const now = Date.now()
+    if(lastUpdate===0) lastUpdate = now;
+    const ratio = 1/ (now - lastUpdate);
+    lastUpdate = now;
+
     /* Update the player if the player is moving */
     let { x, y } = playerSprites.movement.getXY();
     if (transporting) {
@@ -425,17 +431,17 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       /* Move the player */
       switch (direction) {
         case 1:
-          x -= speed / 60;
+          x -= speed*ratio/10;
           break;
         case 2:
-          x += speed / 60;
+          x += speed*ratio/10;
           break;
       }
     }
 
     if (getInJump()) {
       inCollider = false;
-      y -= 3;
+      y -= 20*ratio;
       if (direction != 0) {
         /* Change sprite mid-air */
         switch (direction) {
@@ -453,7 +459,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }
 
     if (getInFall()) {
-      y += 3;
+      y += 23*ratio;
+
       if (direction != 0) {
         /* Change sprite mid-air */
         switch (direction) {
@@ -498,6 +505,10 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   const updateTakeHit = function (time) {
     playerSprites.death.update(time);
   };
+
+  const getAttackDirection = function (){
+    return attackDirection
+  }
 
   const draw = function () {
     if (isAttacking) {
@@ -550,5 +561,6 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     takeHit,
     getIsTakingHit,
     getPlayerSlot,
+    getAttackDirection
   };
 };

@@ -69,6 +69,13 @@ const Socket = (function () {
     socket.on("start game", (message) => {
       window.location.href = "/game-play";
     });
+
+    socket.on("end game", ()=>{
+      console.log("game ended")
+      alert("Game Ended, Please Rejoin New Gameroom")
+      socket.emit()
+      window.location.href = "/game-rooms";
+    })
   };
 
   const disconnect = function () {
@@ -133,6 +140,10 @@ const Socket = (function () {
     message = { room, player, direction};
     socket.emit("player attack right", JSON.stringify(message));
   };
+  const exitGameplay = function (room, player) {
+    message = { room, player }
+    socket.emit("leave gameplay", JSON.stringify(message))
+  }
 
   return {
     getSocket,
@@ -148,6 +159,7 @@ const Socket = (function () {
     playerCollectedCoin,
     playerTeleported,
     playerTrapped,
-    playerAttack
+    playerAttack,
+    exitGameplay
   };
 })();

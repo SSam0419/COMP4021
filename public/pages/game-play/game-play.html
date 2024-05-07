@@ -72,10 +72,10 @@
               <stop offset="1" stop-color="red" />
             </linearGradient>
           </defs>
-          <text x="50%" y="50%">
-            Time's up! You have collected
-            <tspan id="final-coins">0</tspan>
-            coin(s).
+          <text x="50%" y="50%" id="game-over-text">
+          </text>
+          <text x="50%" y="75%"id="leave-button">
+            Back to Game Room
           </text>
         </svg>
       </div>
@@ -122,6 +122,8 @@
       $(function () {
         let roomNum = null;
         let playerSlot = null;
+        const maxScore = 10;
+        const totalGameTime = 180; // Total game time in seconds
         let initComplete = false;
         Authentication.validate(
           () => {
@@ -155,6 +157,8 @@
         const floor = Floor(context, 0, 615);
 
         const coordinates = [
+          { x: 74, y:532},
+          { x: 28, y:532},
           { x: 33, y: 223 },
           { x: 33, y: 103 },
           { x: 178, y: 463 },
@@ -185,9 +189,11 @@
         const player1 = Player(context, 100, 580, gameArea, 1); // The player
         const player2 = Player(context, 500, 580, gameArea, 2); // The player
         let playerInstance = null;
+        let myScore = 0;
+        let opponentScore = 0;
 
         //Coin coordinates should store in server
-        const coin = Coin(context, -5, -5); // The coin
+        const coin = Coin(context, -100, -100); // The coin
 
         let transporters = {
           1: Transporter(context, -5, -5),
@@ -262,6 +268,18 @@
               const { score1, score2 } = score;
               $("#score-1").text("Score: " + score1);
               $("#score-2").text("Score: " + score2);
+              myScore = playerSlot===1? score1:score2
+              opponentScore = playerSlot===1? score2:score1
+
+              if(myScore >= maxScore || opponentScore >= maxScore || gameStartTime>=totalGameTime){
+                console.log("End game")
+                endGame()
+                $('#leave-button').on('click', function(){
+                  console.log(Socket.exitGameplay(roomNum, playerSlot))
+                  window.location.href = "/game-rooms";
+                })
+                return
+              }
             }
 
             /* Update the sprites */
@@ -311,7 +329,7 @@
         function playerGravity(player, opponentPlayer, now) {
           //handle player right attack
           if (player.getIsAttacking()) {
-            if (player.attackDirection == "right") {
+            if (player.getAttackDirection() == "right") {
               if (
                 Math.abs(
                   player.getAttackPosition().y - opponentPlayer.getXY().y
@@ -325,12 +343,14 @@
                 Notification(player.getPlayerSlot() == 1 ? 2 : 1, "get hit");
               }
             } else {
+              console.log(player.getAttackDirection())
+              console.log(opponentPlayer.getXY().x - player.getAttackPosition().x < 0)
               if (
                 Math.abs(
                   player.getAttackPosition().y - opponentPlayer.getXY().y
                 ) < 15 &&
                 // opponent is on the left within 50px
-                player.getAttackPosition().x - opponentPlayer.getXY().x < 50 &&
+                player.getAttackPosition().x - opponentPlayer.getXY().x > -50 &&
                 opponentPlayer.getXY().x - player.getAttackPosition().x < 0
               ) {
                 opponentPlayer.takeHit();
@@ -342,11 +362,12 @@
 
           //handle coin
           if (
-            player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)
+            coin.getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y)
           ) {
             Notification(player.getPlayerSlot(), "coin");
             const { roomNum, playerSlot } = GameroomConfig.getConfig();
-            coin.setXY(-5, -5);
+            console.log("Coin Coord="+coin.getXY().x+coin.getXY().y)
+            coin.setXY(-100, -100);
             Socket.playerCollectedCoin(roomNum, playerSlot);
           }
 
@@ -443,6 +464,12 @@
               player.setInCollider(false);
             }
           }
+        }
+
+        const endGame = function(){
+          displayTxt = myScore > opponentScore? 'You Win!': 'You Lose...'
+          $('#game-over').show()
+          $('#game-over-text').text(displayTxt)
         }
 
         $(document).on("keydown", function (event) {
@@ -545,6 +572,13 @@
         $(document).on("click", function (event) {
           console.log("===========info============");
           console.log("I am Player: ", playerInstance.getPlayerSlot());
+          const canvas = document.getElementById('game-container'); // replace 'your-canvas-id' with your actual canvas id
+
+          const rect = canvas.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+      
+          console.log("x: " + x + " y: " + y);
           console.log("========end of info=========");
         });
 

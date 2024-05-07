@@ -35,8 +35,8 @@ const GameServer = function () {
     { x: 58, y: 343 },
   ];
 
-  let objIndexes = { 1: -1, 2: -1, 3: -1 };
-
+  let objIndexes = { 1: -1, 2: -1};
+  let gameEnd = false;
   let playerStatus = {
     1: { username: "", score: 0 },
     2: { username: "", score: 0 },
@@ -63,20 +63,29 @@ const GameServer = function () {
     }
   };
 
+  const deattachSocket = function (slot){
+    sockets[slot] = null
+  }
+
   // Be called by server socket
   const initialize = function (username1, username2) {
-    playerStatus[1].username = username1;
-    playerStatus[2].username = username2;
+    gameStartTime = 0
+    gameEnd = false;
+    playerStatus = {
+      1: { username: username1, score: 0 },
+      2: { username: username2, score: 0 },
+    };
+    playerCoord = { 1: { x: 215, y: 580 }, 2: { x: 412, y: 580 } };
+
     coinCoord = randomCoinPoint();
     teleporterCoord[1] = platformCoordinates[randomPlatformIdx(1)];
     teleporterCoord[2] = platformCoordinates[randomPlatformIdx(2)];
-    trapCoord = platformCoordinates[randomPlatformIdx(3)];
+    trapCoord = platformCoordinates[Math.floor(Math.random() * platformCoordinates.length)];
     coinAge = randomAge(coinMaxAge);
     teleporterAge[1] = randomAge(transporterMaxAge);
     teleporterAge[2] = randomAge(transporterMaxAge);
     trapAge = randomAge(trapMaxAge);
-    setTimeout(() => gameTick(), 1000);
-    // gameTick();
+    gameTick()
   };
 
   // Natural Update By Time
@@ -100,24 +109,21 @@ const GameServer = function () {
     }
 
     if (trapAge >= transporterMaxAge) {
-      trapCoord = platformCoordinates[randomPlatformIdx(3)];
+      trapCoord = platformCoordinates[Math.floor(Math.random() * platformCoordinates.length)];
       trapAge = randomAge(trapMaxAge);
     }
 
     for (let i = 1; i <= 2; ++i) {
-      sockets[i].emit("game stat", JSON.stringify(packReturn()));
-    }
-
-    if (gameStartTime >= totalGameTime) {
-      for (let i = 1; i <= 2; ++i) {
-        sockets[i].emit("game end", JSON.stringify(packReturn()));
+      if(sockets[i] !== null){
+        sockets[i].emit("game stat", JSON.stringify(packReturn()));
       }
     }
-
-    for (let i = 1; i <= 2; ++i) {
-      if (playerStatus[i].score >= maxScore) {
-        sockets[i].emit("game end", JSON.stringify(packReturn()));
-      }
+    const score1 = playerStatus[1].score 
+    const score2 = playerStatus[2].score
+    if(score1>=maxScore || score2 >= maxScore || gameStartTime >= totalGameTime){
+      gameEnd = true;
+      console.log("Game end, stop running server")
+      return;
     }
     setTimeout(() => gameTick(), 1000);
   };
@@ -144,9 +150,9 @@ const GameServer = function () {
   // objIdx: current platform index of corresponding object, teleporter x 2, trap x 1
   const randomPlatformIdx = function (objIdx) {
     newIdx = Math.floor(Math.random() * platformCoordinates.length);
-    for (let i = 1; i <= 3; ++i) {
+    for (let i = 1; i <= 2; ++i) {
       if (i == objIdx) continue; // Allow Repeat Index for same object
-      if (newIdx == objIndexes) return randomPlatformIdx(objIdx); // Prevent Overlapping of different objects
+      if (newIdx == objIndexes[i]) return randomPlatformIdx(objIdx); // Prevent Overlapping of different objects
     }
     objIndexes[objIdx] = newIdx;
     return newIdx;
@@ -169,12 +175,21 @@ const GameServer = function () {
     }
   };
 
+  const isGameEnd = function() {
+    return gameEnd
+  }
+
   const playerCollectedCoin = function (player) {
     // log event
     console.log("Player " + player + " collected a coin");
     playerStatus[player].score += 1;
     coinCoord = randomCoinPoint();
     coinAge = randomAge(coinMaxAge);
+    for (let i = 1; i <= 2; ++i) {
+      if(sockets[i] !== null){
+        sockets[i].emit("game stat", JSON.stringify(packReturn()));
+      }
+    }
   };
 
   const playerTeleported = function (player, teleporterSteppedOn) {
@@ -206,6 +221,8 @@ const GameServer = function () {
     playerCollectedCoin,
     playerTeleported,
     playerTrapped,
+    deattachSocket,
+    isGameEnd
   };
 };
 
