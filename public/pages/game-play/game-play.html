@@ -300,8 +300,11 @@
             player.stop(1);
             player.trap(trap.getXY().x, trap.getXY().y - 25);
             // now reset trap position
-            // Socket.playerTrapped(roomNum, playerSlot);
+            Socket.playerTrapped(roomNum, playerSlot);
             return;
+          } else {
+            // there is no trap near player
+            player.setIsTrapped(false);
           }
 
           //handle transporter
@@ -337,6 +340,8 @@
               }
             }
           }
+
+          //others
           for (let i = 0; i < colliders.length - 1; i++) {
             if (
               platforms[i]
@@ -368,12 +373,15 @@
           }
         }
 
-        // No more game start to trigger
-        /* Handle the keydown of arrow keys and spacebar */
-
         $(document).on("keydown", function (event) {
           if (playerInstance.getIsRightAttacking()) {
             return console.log("attacking");
+          }
+          if (playerInstance.getIsTakingHit()) {
+            return console.log("taking hit");
+          }
+          if (playerInstance.getIsTrapped()) {
+            return console.log("trapped");
           }
           if (event.keyCode == 37) {
             playerInstance.move(1);

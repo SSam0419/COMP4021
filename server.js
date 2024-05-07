@@ -165,6 +165,7 @@ io.on("connection", (socket) => {
       JSON.stringify({ room, player, keyCode, event })
     );
   });
+  //uitlies
   socket.on("player attack right", (message) => {
     const { room, player } = JSON.parse(message);
     // gameServers[room].playerAttackRight(player);
@@ -183,7 +184,6 @@ io.on("connection", (socket) => {
       JSON.stringify({ room, player, keyCode, event: "attackLeft" })
     );
   });
-
   socket.on("coin collected", (message) => {
     const { room, player } = JSON.parse(message);
     gameServers[room].playerCollectedCoin(player);
@@ -194,6 +194,7 @@ io.on("connection", (socket) => {
   });
   socket.on("player trap", (message) => {
     const { room, player } = JSON.parse(message);
+    console.log(`player ${player} is trapped`);
     gameServers[room].playerTrapped(player);
   });
 });
