@@ -141,7 +141,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   // - `2` - moving to the right
   // - `3` - jump
   let direction = 0;
-  let attackDirection = '';
+  let attackDirection = "";
 
   // This is the moving speed (pixels per second) of the player
   let speed = 150;
@@ -236,15 +236,15 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }
   };
 
-  const attack = function (orientation){
-    if(orientation==='left'){
-      return attackLeft()
-    }else if(orientation==='right'){
-      return attackRight()
+  const attack = function (orientation) {
+    if (orientation === "left") {
+      return attackLeft();
+    } else if (orientation === "right") {
+      return attackRight();
     }
-    console.log("Invalid Arguments for attack")
-    return {x:0,y:0}
-  }
+    console.log("Invalid Arguments for attack");
+    return { x: 0, y: 0 };
+  };
 
   const attackLeft = function () {
     if (getIsTakingHit()) return console.log("taking hit");
@@ -257,7 +257,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
     isAttacking = true;
     isAttackCooldown = true;
-    attackDirection = 'left'
+    attackDirection = "left";
 
     playerSprites.attackLeft.setSequence(attackRightSequences);
     playerSprites.attackLeft.setXY(
@@ -269,6 +269,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
     setTimeout(() => {
       isAttacking = false;
+      attackDirection = "";
       playerSprites.movement.setXY(
         playerSprites.attackLeft.getXY().x,
         playerSprites.attackLeft.getXY().y
@@ -289,13 +290,12 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     if (getIsTrapped()) return;
     if (getInJump() || getInFall())
       return console.log("cant attack while jumping");
-    if (getIsAttacking())
-      return console.log("cant attack while attacking");
+    if (getIsAttacking()) return console.log("cant attack while attacking");
     console.log("attacking right");
 
     isAttacking = true;
     isAttackCooldown = true;
-    attackDirection = 'right'
+    attackDirection = "right";
 
     playerSprites.attackRight.setSequence(attackRightSequences);
     playerSprites.attackRight.setXY(
@@ -307,6 +307,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
     setTimeout(() => {
       isAttacking = false;
+      attackDirection = "";
       playerSprites.movement.setXY(
         playerSprites.attackRight.getXY().x,
         playerSprites.attackRight.getXY().y
@@ -321,16 +322,15 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }, 5000);
   };
 
-  const getAttackPosition = () =>{
-    if(attackDirection==='left'){
+  const getAttackPosition = () => {
+    if (attackDirection === "left") {
       return playerSprites.attackLeft.getXY();
-    }else 
-    if(attackDirection==='right'){
+    } else if (attackDirection === "right") {
       return playerSprites.attackRight.getXY();
     }
-    console.log("Invalid Arguments for attack")
-    return {x:0,y:0}
-  }
+    console.log("Invalid Arguments for attack");
+    return { x: 0, y: 0 };
+  };
 
   const getIsAttacking = () => {
     return isAttacking;
@@ -338,7 +338,6 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   const getIsAttackCooldown = () => {
     return isAttackCooldown;
   };
-
 
   const getIsTakingHit = () => {
     return isTakingHit;
@@ -489,7 +488,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       }
     }
 
-  if (gameArea.isPointInBox(x, y)) playerSprites.movement.setXY(x, y);
+    if (gameArea.isPointInBox(x, y)) playerSprites.movement.setXY(x, y);
     /* Update the sprite object */
     playerSprites.movement.update(time);
   };
@@ -504,19 +503,23 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     playerSprites.death.update(time);
   };
 
-  const draw = function (){
-    if (isAttacking){
-      if(attackDirection==='left'){
-        return playerSprites.attackLeft.draw()
-      }else{
-        return playerSprites.attackRight.draw()
+  const draw = function () {
+    if (isAttacking) {
+      if (attackDirection === "left") {
+        return playerSprites.attackLeft.draw();
+      } else {
+        return playerSprites.attackRight.draw();
       }
     }
-    if (isTakingHit){
-      return playerSprites.death.draw()
+    if (isTakingHit) {
+      return playerSprites.death.draw();
     }
-    return playerSprites.movement.draw()
-  }
+    return playerSprites.movement.draw();
+  };
+
+  const getPlayerSlot = () => {
+    return playerSlot;
+  };
 
   // The methods are returned as an object here.
   return {
@@ -550,5 +553,6 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     getIsAttacking: getIsAttacking,
     takeHit,
     getIsTakingHit,
+    getPlayerSlot,
   };
 };
