@@ -1,3 +1,17 @@
+#overlay {
+  /* cover the whole screen */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 #game-play-area {
   display: flex;
   justify-content: space-between;
@@ -25,17 +39,25 @@ body {
   flex: 2;
 }
 
-canvas, #counter, #game-start, #game-over {
+canvas,
+#counter,
+#game-start,
+#game-over {
   top: 0px;
   left: 0px;
 }
 
-canvas, #game-start, #game-over, #counter {
+canvas,
+#game-start,
+#game-over,
+#counter {
   width: 864px;
   height: 648px;
 }
 
-#game-start, #game-over, #counter {
+#game-start,
+#game-over,
+#counter {
   position: absolute;
 }
 
@@ -44,7 +66,8 @@ canvas {
   background-size: cover;
 }
 
-#game-start, #game-over {
+#game-start,
+#game-over {
   background: rgba(1, 1, 1, 0.8);
 }
 

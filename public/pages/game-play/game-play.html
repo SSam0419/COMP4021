@@ -16,6 +16,7 @@
     <link rel="stylesheet" type="text/css" href="/pages/global.css" />
   </head>
   <body>
+    <div id="overlay"><h1>Loading ...</h1></div>
     <div id="game-play-area">
       <div id="player-1-board" class="player-board">
         <h3>Player 1</h3>
@@ -169,7 +170,7 @@
             ({ roomNum, playerSlot } = GameroomConfig.getConfig());
             if (roomNum && playerSlot) {
               initComplete = true;
-
+              $("#overlay").hide();
               playerInstance = player1;
               if (playerSlot === 2) {
                 playerInstance = player2;
@@ -374,6 +375,10 @@
         }
 
         $(document).on("keydown", function (event) {
+          if (!initComplete) {
+            return;
+          }
+
           if (playerInstance.getIsRightAttacking()) {
             return console.log("attacking");
           }
@@ -466,7 +471,7 @@
           });
         }
         $(document).on("click", function (event) {
-          console.log("=================");
+          console.log("===========info============");
           console.log(
             "Position clicked: x=" + event.clientX + ", y=" + event.clientY
           );
@@ -490,7 +495,7 @@
               transporters[2].getXY().y
           );
           console.log("Coin: x=" + coin.getXY().x + ", y=" + coin.getXY().y);
-          console.log("=================");
+          console.log("========end of info=========");
         });
 
         /* Start the game */

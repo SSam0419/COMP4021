@@ -189,9 +189,8 @@ const GameServer = function () {
   const playerTrapped = function (player) {
     // log event
     console.log("Player " + player + " trapped");
-    //reset trap location
-    // trapCoord = platformCoordinates[randomPlatformIdx(3)];
     // reset coord after 3 seconds
+    trapAge = 0;
     setTimeout(() => {
       trapCoord = platformCoordinates[randomPlatformIdx(3)];
       trapAge = randomAge(trapMaxAge);
