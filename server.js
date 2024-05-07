@@ -165,6 +165,24 @@ io.on("connection", (socket) => {
       JSON.stringify({ room, player, keyCode, event })
     );
   });
+  socket.on("player attack right", (message) => {
+    const { room, player } = JSON.parse(message);
+    // gameServers[room].playerAttackRight(player);
+    const keyCode = 68;
+    io.emit(
+      "game keys event",
+      JSON.stringify({ room, player, keyCode, event: "attackRight" })
+    );
+  });
+  socket.on("player attack left", (message) => {
+    const { room, player } = JSON.parse(message);
+    // gameServers[room].playerAttackLeft(player);
+    const keyCode = 65;
+    io.emit(
+      "game keys event",
+      JSON.stringify({ room, player, keyCode, event: "attackLeft" })
+    );
+  });
 
   socket.on("coin collected", (message) => {
     const { room, player } = JSON.parse(message);

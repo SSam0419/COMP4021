@@ -6,8 +6,10 @@
 // - `gameArea` - The bounding box of the game area
 const Player = function (ctx, x, y, gameArea) {
   let isTrapped = false;
-  let isAttacking = false;
-  let isAttackCooldown = false;
+  let isAttackingRight = false;
+  let isAttackRightCooldown = false;
+  let isAttackingLeft = false;
+  let isAttackLeftCooldown = false;
   // This is the sprite sequences of the player facing different directions.
   const sequences = {
     idle: {
@@ -240,23 +242,25 @@ const Player = function (ctx, x, y, gameArea) {
     // playerSprites.attackLeft.draw();
   };
 
-  const getIsAttacking = () => {
-    return isAttacking;
+  const getRightAttackPosition = () => {
+    return playerSprites.attackRight.getXY();
   };
-  const getIsAttackCooldown = () => {
-    return isAttackCooldown;
+  const getIsRightAttacking = () => {
+    return isAttackingRight;
+  };
+  const getIsRightAttackCooldown = () => {
+    return isAttackRightCooldown;
   };
   const attackRight = function () {
-    console.log("attacking right");
-
-    if (getIsAttackCooldown()) return console.log("attack on cooldown");
+    if (getIsRightAttackCooldown()) return console.log("attack on cooldown");
     if (getIsTrapped()) return;
     if (getInJump() || getInFall())
       return console.log("cant attack while jumping");
-    if (getIsAttacking()) return console.log("cant attack while attacking");
-
-    isAttacking = true;
-    isAttackCooldown = true;
+    if (getIsRightAttacking())
+      return console.log("cant attack while attacking");
+    console.log("attacking right");
+    isAttackingRight = true;
+    isAttackRightCooldown = true;
     playerSprites.attackRight.setSequence(attackRightSequences);
     playerSprites.attackRight.setXY(
       playerSprites.movement.getXY().x,
@@ -266,7 +270,7 @@ const Player = function (ctx, x, y, gameArea) {
     playerSprites.movement.setXY(-100, -100);
 
     setTimeout(() => {
-      isAttacking = false;
+      isAttackingRight = false;
       playerSprites.movement.setXY(
         playerSprites.attackRight.getXY().x,
         playerSprites.attackRight.getXY().y
@@ -277,7 +281,7 @@ const Player = function (ctx, x, y, gameArea) {
     }, 700);
 
     setTimeout(() => {
-      isAttackCooldown = false;
+      isAttackRightCooldown = false;
     }, 5000);
   };
 
@@ -437,6 +441,7 @@ const Player = function (ctx, x, y, gameArea) {
     getIsTrapped,
     attackLeft,
     attackRight,
-    getIsAttacking,
+    getIsRightAttacking,
+    getRightAttackPosition,
   };
 };

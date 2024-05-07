@@ -149,8 +149,8 @@
         let colliders = new Array(platforms.length + 1).fill(false); // The colliders
 
         //Should decide position base on which player
-        const player1 = Player(context, 200, 580, gameArea); // The player
-        const player2 = Player(context, 400, 580, gameArea); // The player
+        const player1 = Player(context, 100, 580, gameArea); // The player
+        const player2 = Player(context, 500, 580, gameArea); // The player
         let playerInstance = null;
 
         //Coin coordinates should store in server
@@ -214,8 +214,8 @@
             trap.update(now);
             playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
 
-            playerGravity(player1, now);
-            playerGravity(player2, now);
+            playerGravity(player1, player2, now);
+            playerGravity(player2, player1, now);
 
             /* Clear the screen */
             context.clearRect(0, 0, cv.width, cv.height);
@@ -226,10 +226,10 @@
             player2.draw();
 
             // attack left and right
-            if (player1.getIsAttacking()) {
+            if (player1.getIsRightAttacking()) {
               player1.drawAttackRight();
             }
-            if (player2.getIsAttacking()) {
+            if (player2.getIsRightAttacking()) {
               player2.drawAttackRight();
             }
 
@@ -243,7 +243,31 @@
           requestAnimationFrame(doFrame);
         }
 
-        function playerGravity(player, now) {
+        function playerGravity(player, opponentPlayer, now) {
+          //handle player right attack
+          if (player.getIsRightAttacking()) {
+            console.log("Player is attacking");
+            console.log(
+              player.getRightAttackPosition().y,
+              opponentPlayer.getXY().y
+            );
+            console.log(
+              player.getRightAttackPosition().x,
+              opponentPlayer.getXY().x
+            );
+            if (
+              Math.abs(
+                player.getRightAttackPosition().y - opponentPlayer.getXY().y
+              ) < 15 &&
+              Math.abs(
+                player.getRightAttackPosition().x - opponentPlayer.getXY().x
+              ) < 50
+            ) {
+              console.log("Player attacked opponent");
+              // Socket.playerAttacked(roomNum, playerSlot);
+            }
+          }
+
           //handle coin
           if (
             player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)
@@ -338,7 +362,7 @@
         /* Handle the keydown of arrow keys and spacebar */
 
         $(document).on("keydown", function (event) {
-          if (playerInstance.getIsAttacking()) {
+          if (playerInstance.getIsRightAttacking()) {
             return console.log("attacking");
           }
           if (event.keyCode == 37) {
@@ -356,6 +380,7 @@
             // playerInstance.attackLeft();
           } else if (event.keyCode == 68) {
             playerInstance.stop(2);
+            Socket.playerAttackRight(roomNum, playerSlot);
             playerInstance.attackRight();
           }
         });
@@ -401,6 +426,13 @@
                       playerInstance.stop(2);
                       break;
                   }
+                  break;
+                case "attackRight":
+                  playerInstance.stop(2);
+                  playerInstance.attackRight();
+                  break;
+                case "attackleft":
+                  playerInstance.attackLeft();
                   break;
               }
             };
