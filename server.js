@@ -13,7 +13,7 @@ const gameSession = session({
   resave: false,
   saveUninitialized: false,
   rolling: true,
-  cookie: { maxAge: 300000 },
+  cookie: { maxAge: null },
 });
 app.use(gameSession);
 

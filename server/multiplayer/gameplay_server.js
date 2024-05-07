@@ -75,7 +75,7 @@ const GameServer = function () {
     teleporterAge[1] = randomAge(transporterMaxAge);
     teleporterAge[2] = randomAge(transporterMaxAge);
     trapAge = randomAge(trapMaxAge);
-    setTimeout(() => gameTick(), 500);
+    setTimeout(() => gameTick(), 1000);
     // gameTick();
   };
 
@@ -123,7 +123,7 @@ const GameServer = function () {
   };
 
   const packReturn = function () {
-    const score = { 1: playerStatus[1].score, 2: playerStatus[2].score };
+    const score = { score1: playerStatus[1].score, score2: playerStatus[2].score };
     return {
       gameStartTime,
       coinCoord,

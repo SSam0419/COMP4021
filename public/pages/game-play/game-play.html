@@ -19,9 +19,9 @@
     <div id="overlay"><h1>Loading ...</h1></div>
     <div id="game-play-area">
       <div id="player-1-board" class="player-board">
-        <h3>Player 1</h3>
-        <div>Score : 10</div>
-        <div>Hit Ability 10s</div>
+        <h3 id="player-1">Player 1</h3>
+        <h5 id="score-1">Score : 10</h5>
+        <div>Skill : <span id="skill-1"><b>Ready!</b></span></div>
       </div>
       <div id="game-container">
         <canvas width="864px" height="648px"></canvas>
@@ -67,7 +67,9 @@
       </div>
 
       <div id="player-2-board" class="player-board">
-        <h3>Player 2</h3>
+        <h3 id="player-2">Player 2</h3>
+        <h5 id="score-2">Score : 10</h5>
+        <div>Skill : <span id="skill-2"><b>Ready!</b></span></div>
       </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
@@ -200,6 +202,10 @@
               trap.setXY(trapCoord.x, trapCoord.y);
               player1.setXY(playerCoord[1].x, playerCoord[1].y);
               player2.setXY(playerCoord[2].x, playerCoord[2].y);
+
+              const {score1, score2} = score
+              $("#score-1").text('Score: '+score1)
+              $("#score-2").text('Score: '+score2)
             }
 
             /* Update the sprites */
