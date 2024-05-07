@@ -10,8 +10,8 @@ const GameServer = function () {
 
   const totalGameTime = 180; // Total game time in seconds
   const coinMaxAge = 10000; // The maximum age of the coins in milliseconds
-  const transporterMaxAge = 15000; // The maximum age of the transporter in milliseconds
-  const trapMaxAge = 6000;
+  const transporterMaxAge = 150000; // The maximum age of the transporter in milliseconds
+  const trapMaxAge = 60000;
   const maxScore = 10; // Score to win
 
   const platformCoordinates = [
@@ -189,8 +189,12 @@ const GameServer = function () {
   const playerTrapped = function (player) {
     // log event
     console.log("Player " + player + " trapped");
-    //reset trap location
-    // trapCoord = platformCoordinates[randomPlatformIdx(3)];
+    // reset coord after 3 seconds
+    trapAge = 0;
+    setTimeout(() => {
+      trapCoord = platformCoordinates[randomPlatformIdx(3)];
+      trapAge = randomAge(trapMaxAge);
+    }, 2000);
   };
 
   // The methods are returned as an object here.

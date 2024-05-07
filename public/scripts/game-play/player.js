@@ -191,12 +191,12 @@ const Player = function (ctx, x, y, gameArea) {
   const trap = (x, y) => {
     isTrapped = true;
     playerSprites.movement.setXY(x, y);
-    setTimeout(() => {
-      isTrapped = false;
-    }, 5000);
   };
   const getIsTrapped = () => {
     return isTrapped;
+  };
+  const setIsTrapped = (_isTrapped) => {
+    isTrapped = _isTrapped;
   };
 
   const updateSocketPlayerMovement = function (room, slot) {
@@ -485,6 +485,7 @@ const Player = function (ctx, x, y, gameArea) {
     udpateAttackLeft,
     updateTakeHit,
     trap,
+    setIsTrapped,
     getIsTrapped,
     attackLeft,
     attackRight,
