@@ -31,6 +31,26 @@
   flex: 1;
 }
 
+.description {
+  background-color: white;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  display: flex;
+  /* align-items: center; */
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+
+  p {
+    display: none;
+  }
+}
+
 body {
   font-family: "Press Start 2P", sans-serif;
 }

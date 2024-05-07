@@ -2,7 +2,7 @@
 // - `ctx` - A canvas context for drawing
 // - `x` - The initial x position of the sprite
 // - `y` - The initial y position of the sprite
-const Sprite = function (ctx, x, y) {
+const Sprite = function (ctx, x, y, needToBeFlipped = false) {
   // This is the image object for the sprite sheet.
   const sheet = new Image();
 
@@ -101,7 +101,6 @@ const Sprite = function (ctx, x, y) {
   const getOrientation = function () {
     return sequence.orientation;
   };
-
   // This function draws the sprite.
   const drawSprite = function () {
     /* Save the settings */
@@ -111,6 +110,11 @@ const Sprite = function (ctx, x, y) {
     const size = getDisplaySize();
 
     ctx.imageSmoothingEnabled = false;
+    if (needToBeFlipped) {
+      ctx.translate(x, 0);
+      ctx.scale(-1, 1);
+      ctx.translate(-x, 0);
+    }
 
     ctx.drawImage(
       sheet,
