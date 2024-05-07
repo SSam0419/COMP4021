@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Collect the coins!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/pages/game-play/game-play.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/pages/global.css" />
+  </head>
+  <body>
+    <div id="game-play-area">
+      <div id="player-1-board" class="player-board">
+        <h3>Player 1</h3>
+        <div>Score : 10</div>
+        <div>Hit Ability 10s</div>
+      </div>
+      <div id="game-container">
+        <canvas width="864px" height="648px"></canvas>
+
+        <svg xmlns="http://www.w3.org/2000/svg" id="counter">
+          <text x="10" y="35">
+            TIME:
+            <tspan id="time-remaining">20</tspan>
+          </text>
+        </svg>
+
+        <!-- <svg xmlns="http://www.w3.org/2000/svg" id="game-start">
+                <defs>
+                    <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0.2" stop-color="red" />
+                        <stop offset="0.4" stop-color="yellow" />
+                        <stop offset="0.6" stop-color="green" />
+                        <stop offset="0.8" stop-color="purple" />
+                    </linearGradient>
+                </defs>
+                <text id="game-title" x="50%" y="45%">BEFORE TWILIGHT...</text>
+                <text x="50%" y="60%">Click here to start the game</text>
+            </svg> -->
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          id="game-over"
+          style="display: none"
+        >
+          <defs>
+            <linearGradient id="game-over-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="red" />
+              <stop offset="0.5" stop-color="yellow" />
+              <stop offset="1" stop-color="red" />
+            </linearGradient>
+          </defs>
+          <text x="50%" y="50%">
+            Time's up! You have collected
+            <tspan id="final-coins">0</tspan>
+            coin(s).
+          </text>
+        </svg>
+      </div>
+
+      <div id="player-2-board" class="player-board">
+        <h3>Player 2</h3>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+    <script src="scripts/socket.js"></script>
+    <script src="scripts/game-play/bounding_box.js"></script>
+    <script src="scripts/game-play/sprite.js"></script>
+    <script src="scripts/authentication.js"></script>
+    <script src="scripts/game-play/player.js"></script>
+    <script src="scripts/game-play/coin.js"></script>
+    <script src="scripts/game-play/platform.js"></script>
+    <script src="scripts/game-play/floor.js"></script>
+    <script src="scripts/game-play/transporter.js"></script>
+    <script src="/socket.io/socket.io.min.js"></script>
+    <script src="scripts/game-play/trap.js"></script>
+
+    <script src="scripts/multiplayer/gameroom_config.js"></script>
+    <script src="scripts/multiplayer/gameobjects_config.js"></script>
+    <script src="scripts/ui/game-rooms.js"></script>
+    <script>
+      $(function () {
+        let roomNum = null;
+        let playerSlot = null;
+        let initComplete = false;
+        Authentication.validate(
+          () => {
+            console.log("User is signed in.");
+            Socket.connect();
+            Socket.getGameConfig();
+          },
+          () => {
+            console.log("User is not signed in.");
+            alert("You are not signed in. Redirecting to sign in page...");
+            window.location.href = "/";
+          }
+        );
+
+        /* Get the canvas and 2D context */
+        const cv = $("canvas").get(0);
+        const context = cv.getContext("2d");
+
+        //** All of this should be updated through websocket in do frame
+        let gameStartTime = 0; // The timestamp when the game starts
+        let collectedcoins = 0; // The number of coins collected in the game
+        let transporterCooldown = 3500; // The cooldown for using the transporter
+        let transporterTimeStamp = 0;
+
+        /* Create the game area */
+        const gameArea = BoundingBox(context, -100, 0, 615, 864);
+        const objectArea = BoundingBox(context, 8, 8, 580, 850);
+
+        /* Create the sprites in the game */
+
+        const floor = Floor(context, 0, 615);
+
+        const coordinates = [
+          { x: 33, y: 223 },
+          { x: 33, y: 103 },
+          { x: 178, y: 463 },
+          { x: 178, y: 392 },
+          { x: 178, y: 295 },
+          { x: 178, y: 151 },
+          { x: 321, y: 343 },
+          { x: 321, y: 223 },
+          { x: 321, y: 103 },
+          { x: 465, y: 295 },
+          { x: 465, y: 151 },
+          { x: 682, y: 511 },
+          { x: 682, y: 415 },
+          { x: 682, y: 321 },
+          { x: 682, y: 223 },
+          { x: 753, y: 103 },
+          { x: 608, y: 103 },
+          { x: 58, y: 343 },
+        ];
+
+        const platforms = coordinates.map(
+          (coord) => new Platform(context, coord.x, coord.y)
+        ); // The platforms
+
+        let colliders = new Array(platforms.length + 1).fill(false); // The colliders
+
+        //Should decide position base on which player
+        const player1 = Player(context, 100, 580, gameArea); // The player
+        const player2 = Player(context, 500, 580, gameArea); // The player
+        let playerInstance = null;
+
+        //Coin coordinates should store in server
+        const coin = Coin(context, -5, -5); // The coin
+
+        let transporters = {
+          1: Transporter(context, -5, -5),
+          2: Transporter(context, -5, -5),
+        };
+
+        const trap = Trap(context, -5, -5); // The trap
+
+        /* The main processing of the game */
+        function doFrame(now) {
+          if (!initComplete) {
+            ({ roomNum, playerSlot } = GameroomConfig.getConfig());
+            if (roomNum && playerSlot) {
+              initComplete = true;
+
+              playerInstance = player1;
+              if (playerSlot === 2) {
+                playerInstance = player2;
+              }
+            }
+          }
+
+          if (initComplete) {
+            // $("#time-remaining").text(timeRemaining);
+
+            if (GameObjectsConfig.hasUpdate()) {
+              let {
+                gameStartTime,
+                coinCoord,
+                teleporterCoord,
+                trapCoord,
+                playerCoord,
+                score,
+              } = GameObjectsConfig.getConfig();
+              coin.setXY(coinCoord.x, coinCoord.y);
+              for (let i = 1; i <= 2; ++i) {
+                transporters[i].setXY(
+                  teleporterCoord[i].x,
+                  teleporterCoord[i].y
+                );
+              }
+              trap.setXY(trapCoord.x, trapCoord.y);
+              player1.setXY(playerCoord[1].x, playerCoord[1].y);
+              player2.setXY(playerCoord[2].x, playerCoord[2].y);
+            }
+
+            /* Update the sprites */
+            coin.update(now);
+
+            player1.update(now);
+            player2.update(now);
+            player1.udpateAttackRight(now);
+            player2.udpateAttackRight(now);
+            player1.updateTakeHit(now);
+            player2.updateTakeHit(now);
+
+            transporters[1].update(now);
+            transporters[2].update(now);
+            trap.update(now);
+            playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
+
+            playerGravity(player1, player2, now);
+            playerGravity(player2, player1, now);
+
+            /* Clear the screen */
+            context.clearRect(0, 0, cv.width, cv.height);
+
+            /* Draw the sprites */
+            coin.draw();
+            player1.draw();
+            player2.draw();
+
+            // attack left and right
+            if (player1.getIsRightAttacking()) {
+              player1.drawAttackRight();
+            }
+            if (player2.getIsRightAttacking()) {
+              player2.drawAttackRight();
+            }
+
+            if (player1.getIsTakingHit()) {
+              player1.drawTakingHit();
+            }
+            if (player2.getIsTakingHit()) {
+              player2.drawTakingHit();
+            }
+
+            // player1.drawAttackLeft();
+
+            transporters[1].draw();
+            transporters[2].draw();
+            trap.draw();
+          }
+
+          requestAnimationFrame(doFrame);
+        }
+
+        function playerGravity(player, opponentPlayer, now) {
+          //handle player right attack
+          if (player.getIsRightAttacking()) {
+            console.log("Player is attacking");
+            console.log(
+              player.getRightAttackPosition().y,
+              opponentPlayer.getXY().y
+            );
+            console.log(
+              player.getRightAttackPosition().x,
+              opponentPlayer.getXY().x
+            );
+            if (
+              Math.abs(
+                player.getRightAttackPosition().y - opponentPlayer.getXY().y
+              ) < 15 &&
+              Math.abs(
+                player.getRightAttackPosition().x - opponentPlayer.getXY().x
+              ) < 50
+            ) {
+              console.log("Player attacked opponent");
+              opponentPlayer.takeHit();
+              // Socket.playerAttacked(roomNum, playerSlot);
+            }
+          }
+
+          //handle coin
+          if (
+            player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)
+          ) {
+            console.log("Player has collected a coin");
+            const { roomNum, playerSlot } = GameroomConfig.getConfig();
+            coin.setXY(-5, -5);
+            Socket.playerCollectedCoin(roomNum, playerSlot);
+          }
+
+          //handle trap
+          if (
+            player
+              .getBoundingBox()
+              .isPointInBox(trap.getXY().x, trap.getXY().y - 15) &&
+            !player.getInFall() &&
+            !player.getInJump()
+          ) {
+            console.log("Player is trapped");
+            player.stop(1);
+            player.trap(trap.getXY().x, trap.getXY().y - 25);
+            // now reset trap position
+            // Socket.playerTrapped(roomNum, playerSlot);
+            return;
+          }
+
+          //handle transporter
+          if (
+            !player.getInFall() &&
+            !player.getInJump() &&
+            !player.getIsTrapped()
+          ) {
+            for (let i = 1; i <= 2; i++) {
+              if (
+                player
+                  .getBoundingBox()
+                  .isPointInBox(
+                    transporters[i].getXY().x,
+                    transporters[i].getXY().y - 30
+                  )
+              ) {
+                if (now - transporterTimeStamp < transporterCooldown) {
+                  console.log("Transporter is on cooldown");
+                } else {
+                  console.log("Player is teleported");
+                  transporterTimeStamp = now;
+                  const transporter = transporters[i == 1 ? 2 : 1];
+                  player.transport(
+                    transporter.getXY().x,
+                    transporter.getXY().y - 30,
+                    now
+                  );
+                }
+
+                // const { roomNum, playerSlot } = GameroomConfig.getConfig();
+                // Socket.playerTeleported(roomNum, playerSlot, i);
+              }
+            }
+          }
+          for (let i = 0; i < colliders.length - 1; i++) {
+            if (
+              platforms[i]
+                .getBoundingBox()
+                .isPointInBox(player.getXY().x, player.getXY().y + 25)
+            ) {
+              colliders[i] = true;
+            } else {
+              colliders[i] = false;
+            }
+          }
+
+          if (
+            floor
+              .getBoundingBox()
+              .isPointInBox(player.getXY().x, player.getXY().y + 25)
+          ) {
+            colliders[colliders.length - 1] = true;
+          } else {
+            colliders[colliders.length - 1] = false;
+          }
+
+          if (player.getInFall() || !player.getInJump()) {
+            if (colliders.some((value) => value === true)) {
+              player.setInCollider(true);
+            } else {
+              player.setInCollider(false);
+            }
+          }
+        }
+
+        // No more game start to trigger
+        /* Handle the keydown of arrow keys and spacebar */
+
+        $(document).on("keydown", function (event) {
+          if (playerInstance.getIsRightAttacking()) {
+            return console.log("attacking");
+          }
+          if (event.keyCode == 37) {
+            playerInstance.move(1);
+            Socket.playerKeys(roomNum, playerSlot, 37, "keydown");
+          } else if (event.keyCode == 39) {
+            playerInstance.move(2);
+            Socket.playerKeys(roomNum, playerSlot, 39, "keydown");
+          } else if (event.keyCode == 38) {
+            playerInstance.jump();
+            playerInstance.setInCollider(false);
+            Socket.playerKeys(roomNum, playerSlot, 38, "keydown");
+          } else if (event.keyCode == 65) {
+            // playerInstance.stop(1);
+            // playerInstance.attackLeft();
+          } else if (event.keyCode == 68) {
+            playerInstance.stop(2);
+            Socket.playerAttackRight(roomNum, playerSlot);
+            playerInstance.attackRight();
+          }
+        });
+
+        /* Handle the keyup of arrow keys and spacebar */
+        $(document).on("keyup", function (event) {
+          if (event.keyCode == 37) {
+            playerInstance.stop(1);
+            Socket.playerKeys(roomNum, playerSlot, 37, "keyup");
+          } else if (event.keyCode == 39) {
+            playerInstance.stop(2);
+            Socket.playerKeys(roomNum, playerSlot, 39, "keyup");
+          }
+        });
+
+        const playerEventSocket = io();
+        if (playerEventSocket) {
+          playerEventSocket.on("game keys event", (message) => {
+            const { room, player, keyCode, event } = JSON.parse(message);
+
+            const handlePlayerMovement = (playerInstance) => {
+              switch (event) {
+                case "keydown":
+                  switch (keyCode) {
+                    case 37:
+                      playerInstance.move(1);
+                      break;
+                    case 39:
+                      playerInstance.move(2);
+                      break;
+                    case 38:
+                      playerInstance.jump();
+                      playerInstance.setInCollider(false);
+                      break;
+                  }
+                  break;
+                case "keyup":
+                  switch (keyCode) {
+                    case 37:
+                      playerInstance.stop(1);
+                      break;
+                    case 39:
+                      playerInstance.stop(2);
+                      break;
+                  }
+                  break;
+                case "attackRight":
+                  playerInstance.stop(2);
+                  playerInstance.attackRight();
+                  break;
+                case "attackleft":
+                  playerInstance.attackLeft();
+                  break;
+              }
+            };
+
+            switch (player) {
+              case 1:
+                handlePlayerMovement(player1);
+                break;
+              case 2:
+                handlePlayerMovement(player2);
+                break;
+            }
+          });
+        }
+        $(document).on("click", function (event) {
+          console.log("=================");
+          console.log(
+            "Position clicked: x=" + event.clientX + ", y=" + event.clientY
+          );
+          console.log("Trap: x=" + trap.getXY().x + ", y=" + trap.getXY().y);
+          console.log(
+            "PlayerInstance: x=" +
+              playerInstance.getXY().x +
+              ", y=" +
+              playerInstance.getXY().y
+          );
+          console.log(
+            "Transporter 1: x=" +
+              transporters[1].getXY().x +
+              ", y=" +
+              transporters[1].getXY().y
+          );
+          console.log(
+            "Transporter 2: x=" +
+              transporters[2].getXY().x +
+              ", y=" +
+              transporters[2].getXY().y
+          );
+          console.log("Coin: x=" + coin.getXY().x + ", y=" + coin.getXY().y);
+          console.log("=================");
+        });
+
+        /* Start the game */
+        requestAnimationFrame(doFrame);
+      });
+    </script>
+  </body>
+</html>

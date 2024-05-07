@@ -17,24 +17,7 @@ const GameRooms = (function () {
       var $gameRoom = $(this).closest(".game-room-container");
       var roomId = $gameRoom.data("room");
       var $playerSlot = $(this).closest(".player-container");
-
-      //remove from previous room
-      if (roomJoint !== null) {
-        var $previousRoom = $(`.game-room-container[data-room=${roomJoint}]`);
-        var $previousSlot = $previousRoom.find(
-          `.player-container .player-${slotJoint}-slot`
-        );
-        $previousSlot.text("Empty Slot");
-        $previousRoom.find(`button.join-button`).show();
-      }
-
       var playerNumber = $playerSlot.index() + 1;
-
-      // $playerSlot
-      //   .find(`p.player-${playerNumber}-slot`)
-      //   .text("User J " + playerNumber);
-
-      $playerSlot.find(`button.join-button`).hide();
 
       console.log("Joining Room " + roomId + " - Player " + playerNumber);
 
@@ -42,6 +25,19 @@ const GameRooms = (function () {
       slotJoint = playerNumber;
 
       Socket.joinRoom(roomJoint, slotJoint, Authentication.getUser().username);
+    });
+
+    $("#game-room-list").on("click", ".start-button", function () {
+      var $gameRoom = $(this).closest(".game-room-container");
+      var roomId = $gameRoom.data("room");
+      var $playerSlot = $(this).closest(".player-container");
+      var playerNumber = $playerSlot.index() + 1;
+
+      console.log("Start Room " + roomId + " - Player " + playerNumber);
+
+      roomJoint = roomId;
+
+      Socket.startGame(roomId);
     });
   };
 
@@ -63,7 +59,7 @@ const GameRooms = (function () {
     for (const key in gameRooms) {
       var $gameRoom = $(`.game-room-container[data-room=${key}]`);
 
-      // this should be 2 buttons, show them all
+      // this should be 2 buttons, show them both
       $gameRoom.find(`button.join-button`).show();
 
       var room = gameRooms[key];
@@ -86,5 +82,18 @@ const GameRooms = (function () {
     }
   };
 
-  return { initialize, updateOnlinePlayers, updateGameRooms };
+  const getRoomJoint = function () {
+    return roomJoint;
+  };
+  const getSlotJoint = function () {
+    return slotJoint;
+  };
+
+  return {
+    initialize,
+    updateOnlinePlayers,
+    updateGameRooms,
+    getRoomJoint,
+    getSlotJoint,
+  };
 })();

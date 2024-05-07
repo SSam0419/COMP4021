@@ -19,4 +19,8 @@ router.get("/game-rooms", (req, res) => {
   res.sendFile(projectRoot + "/public/pages/game-rooms/game-rooms.html");
 });
 
+router.get("/game-play", (req, res) => {
+  res.sendFile(projectRoot + "/public/pages/game-play/game-play.html");
+});
+
 module.exports = router;
