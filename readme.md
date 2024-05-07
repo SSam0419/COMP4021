@@ -18,10 +18,10 @@
 	- Players' interaction
 	- Game Controls
 	- Game duration
-		- 3-4 minutes
+		- **3-4 minutes**
 	- Cheat mode
 		- Game finish much quicker
-    - **Can Disable**
+    		- **Can Disable**
 - Game over page
 	- Player statistics
 		- **Relevant statistics (Coin get, Beat up player count?)**
@@ -30,10 +30,10 @@
 	- Restart the game/ back to front page
 - Graphic and sounds
 	- SVG/ Canvas
-	- Two different sounds
+	- **Two different sounds**
 - Running the project
 	- **Single 'npm install'**
-	- README file
+	- **README file**
 - User suppport
 	- Handle multiple users in realtime
 - Game quality
