@@ -41,9 +41,9 @@ const Socket = (function () {
 
     socket.on("game config", (message) => {
       if (!GameroomConfig) return;
-      const { roomNum, player } = JSON.parse(message);
+      const { roomNum, player, playerName } = JSON.parse(message);
       console.log("Room Number: " + roomNum);
-      GameroomConfig.setConfig(roomNum, player);
+      GameroomConfig.setConfig(roomNum, player, playerName);
     });
 
     socket.on("game stat", (message) => {

@@ -7,7 +7,7 @@ const GameServer = function () {
   let gameStartTime = 0; // The timestamp when the game starts
   let transporterCooldown = 5000; // The cooldown for using the transporter
   let transporterTimeStamp = 0;
-
+  
   const totalGameTime = 180; // Total game time in seconds
   const coinMaxAge = 10000; // The maximum age of the coins in milliseconds
   const transporterMaxAge = 150000; // The maximum age of the transporter in milliseconds
@@ -65,8 +65,11 @@ const GameServer = function () {
 
   // Be called by server socket
   const initialize = function (username1, username2) {
+    gameStartTime = 0
     playerStatus[1].username = username1;
+    playerStatus[1].score = 0;
     playerStatus[2].username = username2;
+    playerStatus[2].score = 0;
     coinCoord = randomCoinPoint();
     teleporterCoord[1] = platformCoordinates[randomPlatformIdx(1)];
     teleporterCoord[2] = platformCoordinates[randomPlatformIdx(2)];
@@ -108,16 +111,11 @@ const GameServer = function () {
       sockets[i].emit("game stat", JSON.stringify(packReturn()));
     }
 
-    if (gameStartTime >= totalGameTime) {
-      for (let i = 1; i <= 2; ++i) {
-        sockets[i].emit("game end", JSON.stringify(packReturn()));
-      }
-    }
-
-    for (let i = 1; i <= 2; ++i) {
-      if (playerStatus[i].score >= maxScore) {
-        sockets[i].emit("game end", JSON.stringify(packReturn()));
-      }
+    const score1 = playerStatus[1].score 
+    const score2 = playerStatus[2].score
+    if(score1>=maxScore || score2 >= maxScore || gameStartTime >= totalGameTime){
+      console.log("Game end, end server")
+      return;
     }
     setTimeout(() => gameTick(), 1000);
   };

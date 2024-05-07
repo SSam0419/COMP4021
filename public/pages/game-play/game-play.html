@@ -20,8 +20,8 @@
     <div id="game-play-area">
       <div id="player-1-board" class="player-board">
         <h3 id="player-1">Player 1</h3>
-        <h5 id="score-1">Score : 10</h5>
-        <div>Skill : <span id="skill-1"><b>Ready!</b></span></div>
+        <h5 id="score-1">Score : XXX</h5>
+        <div>Skill : <span id="skill-1"><b>XXXXX!</b></span></div>
       </div>
       <div id="game-container">
         <canvas width="864px" height="648px"></canvas>
@@ -58,18 +58,18 @@
               <stop offset="1" stop-color="red" />
             </linearGradient>
           </defs>
-          <text x="50%" y="50%">
-            Time's up! You have collected
-            <tspan id="final-coins">0</tspan>
-            coin(s).
+          <text x="50%" y="50%" id="game-over-text">
+          </text>
+          <text x="50%" y="75%"id="leave-button">
+            Back to Game Room
           </text>
         </svg>
       </div>
 
       <div id="player-2-board" class="player-board">
         <h3 id="player-2">Player 2</h3>
-        <h5 id="score-2">Score : 10</h5>
-        <div>Skill : <span id="skill-2"><b>Ready!</b></span></div>
+        <h5 id="score-2">Score : XXX</h5>
+        <div>Skill : <span id="skill-2"><b>XXXXX!</b></span></div>
       </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
@@ -92,7 +92,13 @@
       $(function () {
         let roomNum = null;
         let playerSlot = null;
+        let player1Name = null;
+        let player2Name = null;
         let initComplete = false;
+        
+        const maxScore = 10; // Score to win
+        const totalGameTime = 180; // Total game time in seconds
+        
         Authentication.validate(
           () => {
             console.log("User is signed in.");
@@ -154,7 +160,10 @@
         //Should decide position base on which player
         const player1 = Player(context, 100, 580, gameArea, 1); // The player
         const player2 = Player(context, 500, 580, gameArea, 2); // The player
+        let myScore = 0
+        let opponentScore = 0
         let playerInstance = null;
+        let opponentInstance = null;
 
         //Coin coordinates should store in server
         const coin = Coin(context, -5, -5); // The coin
@@ -169,20 +178,28 @@
         /* The main processing of the game */
         function doFrame(now) {
           if (!initComplete) {
-            ({ roomNum, playerSlot } = GameroomConfig.getConfig());
-            if (roomNum && playerSlot) {
+            ({ roomNum, playerSlot, playerName } = GameroomConfig.getConfig());
+            if (roomNum && playerSlot && playerName) {
+              console.log(playerName)
+              player1Name = playerName['player1']
+              player2Name = playerName['player2']
               initComplete = true;
               $("#overlay").hide();
               playerInstance = player1;
+              opponentInstance = player2
+              $('#player-1').text(`${player1Name} (You)`)
+              $('#player-2').text(player2Name)
               if (playerSlot === 2) {
                 playerInstance = player2;
+                opponentInstance = player2;
+                $('#player-1').text(`${player2Name} (You)`)
+                $('#player-2').text(player1Name)
               }
             }
           }
-
+          
           if (initComplete) {
             // $("#time-remaining").text(timeRemaining);
-
             if (GameObjectsConfig.hasUpdate()) {
               let {
                 gameStartTime,
@@ -204,8 +221,21 @@
               player2.setXY(playerCoord[2].x, playerCoord[2].y);
 
               const {score1, score2} = score
-              $("#score-1").text('Score: '+score1)
-              $("#score-2").text('Score: '+score2)
+
+              myScore = playerSlot===1? score1:score2
+              opponentScore = playerSlot===1? score2:score1
+              updatePlayerBoard(true, 'score', `Score: ${myScore}`)
+              updatePlayerBoard(false, 'score', `Score: ${opponentScore}`)
+
+              if(myScore >= maxScore || opponentScore >= maxScore || gameStartTime>=totalGameTime){
+                console.log("End game")
+                endGame()
+                $('#leave-button').on('click', function(){
+                  window.location.href = "/game-rooms";
+                  Socket.emit('cleanup game')
+                })
+                return
+              }
             }
 
             /* Update the sprites */
@@ -224,12 +254,19 @@
             transporters[2].update(now);
             trap.update(now);
             playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
+            opponentInstance = playerSlot===1? player2:player1
             const isCooldown = playerInstance.getIsAttackCooldown();
+            const opponentIsCooldown = opponentInstance.getIsAttackCooldown()
             const cooldownTxt = isCooldown?'Cooling':'Ready!';
-            $(`#skill-${playerSlot}`).text(cooldownTxt)
+            const opponentCooldownTxt = opponentIsCooldown?'Cooling':'Ready!';
+            const color = isCooldown ? 'red' : 'green';
+            $('#skill-1').css('color', color).text(cooldownTxt);
+
+            const opponentColor = opponentIsCooldown ? 'red' : 'green';
+            $('#skill-2').css('color', opponentColor).text(opponentCooldownTxt);
+
             
-            playerGravity(player1, player2, now);
-            playerGravity(player2, player1, now);
+            playerGravity(playerInstance, opponentInstance, now);
 
             /* Clear the screen */
             context.clearRect(0, 0, cv.width, cv.height);
@@ -271,7 +308,7 @@
           ) {
             console.log("Player has collected a coin");
             const { roomNum, playerSlot } = GameroomConfig.getConfig();
-            coin.setXY(-5, -5);
+            coin.setXY(-100, -100);
             Socket.playerCollectedCoin(roomNum, playerSlot);
           }
 
@@ -321,9 +358,6 @@
                     now
                   );
                 }
-
-                // const { roomNum, playerSlot } = GameroomConfig.getConfig();
-                // Socket.playerTeleported(roomNum, playerSlot, i);
               }
             }
           }
@@ -484,6 +518,18 @@
           console.log("Coin: x=" + coin.getXY().x + ", y=" + coin.getXY().y);
           console.log("========end of info=========");
         });
+
+        
+        const updatePlayerBoard = function(isMe, elementId, value){
+          let slot = isMe ? 1 : 2;
+          $(`#${elementId}-${slot}`).text(value)
+      }
+
+        const endGame = function(){
+          displayTxt = myScore > opponentScore? 'You Win!': 'You Lose...'
+          $('#game-over').show()
+          $('#game-over-text').text(displayTxt)
+        }
 
         /* Start the game */
         requestAnimationFrame(doFrame);

@@ -140,6 +140,10 @@ const Sprite = function (ctx, x, y, needToBeFlipped = false) {
     return this;
   };
 
+  const getDeltaTime = function (time) {
+    return time - lastUpdate
+  }
+
   // This function updates the sprite by moving to the next sprite
   // at appropriate time.
   // - `time` - The timestamp when this function is called
@@ -175,5 +179,6 @@ const Sprite = function (ctx, x, y, needToBeFlipped = false) {
     isReady: isReady,
     draw: draw,
     update: update,
+    getDeltaTime: getDeltaTime
   };
 };

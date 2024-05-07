@@ -202,7 +202,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   // This function sets the player's moving direction.
   // - `dir` - the moving direction (1: Left, 2: Right, 3: Up)
   const move = function (dir) {
-    if (isTrapped) return console.log("trapping");
+    if (isTrapped) return ;
     if (dir >= 1 && dir <= 4 && dir != direction) {
       if (!(getInJump() || getInFall())) {
         switch (dir) {
@@ -454,7 +454,11 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }
 
     if (getInFall()) {
-      y += 3;
+      let deltaTime = playerSprites.movement.getDeltaTime(time) / 1000
+      deltaTime = deltaTime<1?1:deltaTime
+      console.log(deltaTime)
+
+      y += 3 * deltaTime;
       if (direction != 0) {
         /* Change sprite mid-air */
         switch (direction) {

@@ -144,10 +144,18 @@ io.on("connection", (socket) => {
     }
 
     gameServers[roomNum].setSocket(username, socket);
-    toReturn = { roomNum, player };
+    const playerName = gameRooms[roomNum]
+    toReturn = { roomNum, player, playerName};
     console.log("game config : ", toReturn);
     socket.emit("game config", JSON.stringify(toReturn));
   });
+
+  socket.on('cleanup game', (message)=>{
+    const { room } = JSON.parse(message)
+    gameRooms[room]['player1'] = null;
+    gameRooms[room]['player2'] = null;
+    gameServers[room] = new GameServer();
+  })
 
   // Given the gameroom, player and command, do the command in the gameroom
   // expected message: {room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
