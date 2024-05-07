@@ -166,24 +166,24 @@ io.on("connection", (socket) => {
     );
   });
   //uitlies
-  socket.on("player attack right", (message) => {
-    const { room, player } = JSON.parse(message);
+  socket.on("player attack", (message) => {
+    const { room, player, direction } = JSON.parse(message);
     // gameServers[room].playerAttackRight(player);
-    const keyCode = 68;
-    io.emit(
-      "game keys event",
-      JSON.stringify({ room, player, keyCode, event: "attackRight" })
-    );
+    if(direction==='left'){
+      const keyCode = 68;
+      io.emit(
+        "game keys event",
+        JSON.stringify({ room, player, keyCode, event: "attackRight" })
+      );
+    }else if(direction==='right'){
+      const keyCode = 65;
+      io.emit(
+        "game keys event",
+        JSON.stringify({ room, player, keyCode, event: "attackLeft" })
+      );
+    }
   });
-  socket.on("player attack left", (message) => {
-    const { room, player } = JSON.parse(message);
-    // gameServers[room].playerAttackLeft(player);
-    const keyCode = 65;
-    io.emit(
-      "game keys event",
-      JSON.stringify({ room, player, keyCode, event: "attackLeft" })
-    );
-  });
+
   socket.on("coin collected", (message) => {
     const { room, player } = JSON.parse(message);
     gameServers[room].playerCollectedCoin(player);

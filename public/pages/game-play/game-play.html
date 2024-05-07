@@ -224,7 +224,10 @@
             transporters[2].update(now);
             trap.update(now);
             playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
-
+            const isCooldown = playerInstance.getIsAttackCooldown();
+            const cooldownTxt = isCooldown?'Cooling':'Ready!';
+            $(`#skill-${playerSlot}`).text(cooldownTxt)
+            
             playerGravity(player1, player2, now);
             playerGravity(player2, player1, now);
 
@@ -236,29 +239,6 @@
             player1.draw();
             player2.draw();
 
-            // attack left and right
-            if (player1.getIsRightAttacking()) {
-              player1.drawAttackRight();
-            }
-            if (player2.getIsRightAttacking()) {
-              player2.drawAttackRight();
-            }
-            if (player1.getIsLeftAttacking()) {
-              player1.drawAttackLeft();
-            }
-            if (player2.getIsLeftAttacking()) {
-              player2.drawAttackLeft();
-            }
-
-            if (player1.getIsTakingHit()) {
-              player1.drawTakingHit();
-            }
-            if (player2.getIsTakingHit()) {
-              player2.drawTakingHit();
-            }
-
-            // player1.drawAttackLeft();
-
             transporters[1].draw();
             transporters[2].draw();
             trap.draw();
@@ -269,33 +249,16 @@
 
         function playerGravity(player, opponentPlayer, now) {
           //handle player right attack
-          if (player.getIsRightAttacking()) {
+          if (player.getIsAttacking()) {
             console.log("Player is attacking right");
             if (
               Math.abs(
-                player.getRightAttackPosition().y - opponentPlayer.getXY().y
+                player.getAttackPosition().y - opponentPlayer.getXY().y
               ) < 15 &&
               // opponent is on the right within 50px
-              opponentPlayer.getXY().x - player.getRightAttackPosition().x <
+              opponentPlayer.getXY().x - player.getAttackPosition().x <
                 50 &&
-              player.getRightAttackPosition().x - opponentPlayer.getXY().x < 0
-            ) {
-              console.log("Player attacked opponent");
-              opponentPlayer.takeHit();
-            }
-          }
-
-          //handle player left attack
-          if (player.getIsLeftAttacking()) {
-            console.log("Player is attacking left");
-            if (
-              Math.abs(
-                player.getLeftAttackPosition().y - opponentPlayer.getXY().y
-              ) < 15 &&
-              // opponent is on the left within 50px
-              player.getLeftAttackPosition().x - opponentPlayer.getXY().x <
-                50 &&
-              opponentPlayer.getXY().x - player.getLeftAttackPosition().x < 0
+              player.getAttackPosition().x - opponentPlayer.getXY().x < 0
             ) {
               console.log("Player attacked opponent");
               opponentPlayer.takeHit();
@@ -401,7 +364,7 @@
           if (!initComplete) {
             return;
           }
-          if (playerInstance.getIsRightAttacking()) {
+          if (playerInstance.getIsAttacking()) {
             return console.log("attacking");
           }
           if (playerInstance.getIsTakingHit()) {
@@ -422,12 +385,12 @@
             Socket.playerKeys(roomNum, playerSlot, 38, "keydown");
           } else if (event.keyCode == 65) {
             playerInstance.stop(1);
-            Socket.playerAttackLeft(roomNum, playerSlot);
-            playerInstance.attackLeft();
+            Socket.playerAttack(roomNum, playerSlot, 'left');
+            playerInstance.attack('left');
           } else if (event.keyCode == 68) {
             playerInstance.stop(2);
-            Socket.playerAttackRight(roomNum, playerSlot);
-            playerInstance.attackRight();
+            Socket.playerAttack(roomNum, playerSlot, 'right');
+            playerInstance.attack('right');
           }
         });
 
@@ -475,11 +438,11 @@
                   break;
                 case "attackRight":
                   playerInstance.stop(2);
-                  playerInstance.attackRight();
+                  playerInstance.attack('right');
                   break;
                 case "attackLeft":
                   playerInstance.stop(1);
-                  playerInstance.attackLeft();
+                  playerInstance.attack('left');
                   break;
               }
             };

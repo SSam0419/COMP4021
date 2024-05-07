@@ -6,10 +6,8 @@
 // - `gameArea` - The bounding box of the game area
 const Player = function (ctx, x, y, gameArea, playerSlot) {
   let isTrapped = false;
-  let isAttackingRight = false;
-  let isAttackRightCooldown = false;
-  let isAttackingLeft = false;
-  let isAttackLeftCooldown = false;
+  let isAttacking = false;
+  let isAttackCooldown = false;
   let isTakingHit = false;
   // This is the sprite sequences of the player facing different directions.
   const sequences = {
@@ -143,6 +141,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   // - `2` - moving to the right
   // - `3` - jump
   let direction = 0;
+  let attackDirection = '';
 
   // This is the moving speed (pixels per second) of the player
   let speed = 150;
@@ -237,71 +236,28 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }
   };
 
-  const getRightAttackPosition = () => {
-    return playerSprites.attackRight.getXY();
-  };
-  const getIsRightAttacking = () => {
-    return isAttackingRight;
-  };
-  const getIsRightAttackCooldown = () => {
-    return isAttackRightCooldown;
-  };
-  const attackRight = function () {
-    if (getIsTakingHit()) return console.log("taking hit");
-    if (getIsRightAttackCooldown()) return console.log("attack on cooldown");
-    if (getIsTrapped()) return;
-    if (getInJump() || getInFall())
-      return console.log("cant attack while jumping");
-    if (getIsRightAttacking())
-      return console.log("cant attack while attacking");
-    console.log("attacking right");
+  const attack = function (orientation){
+    if(orientation==='left'){
+      return attackLeft()
+    }else if(orientation==='right'){
+      return attackRight()
+    }
+    console.log("Invalid Arguments for attack")
+    return {x:0,y:0}
+  }
 
-    isAttackingRight = true;
-    isAttackRightCooldown = true;
-    playerSprites.attackRight.setSequence(attackRightSequences);
-    playerSprites.attackRight.setXY(
-      playerSprites.movement.getXY().x,
-      playerSprites.movement.getXY().y - 5
-    );
-    // hide player sprite
-    playerSprites.movement.setXY(-100, -100);
-
-    setTimeout(() => {
-      isAttackingRight = false;
-      playerSprites.movement.setXY(
-        playerSprites.attackRight.getXY().x,
-        playerSprites.attackRight.getXY().y
-      );
-      playerSprites.movement.setSequence(sequences.idle);
-      // remove attack sprite
-      playerSprites.attackRight.setXY(-100, -100);
-    }, 700);
-
-    setTimeout(() => {
-      isAttackRightCooldown = false;
-    }, 5000);
-  };
-
-  const getLeftAttackPosition = () => {
-    return playerSprites.attackLeft.getXY();
-  };
-  const getIsLeftAttacking = () => {
-    return isAttackingLeft;
-  };
-  const getIsLeftAttackCooldown = () => {
-    return isAttackLeftCooldown;
-  };
   const attackLeft = function () {
     if (getIsTakingHit()) return console.log("taking hit");
-    if (getIsLeftAttackCooldown()) return console.log("attack on cooldown");
+    if (getIsAttackCooldown()) return console.log("attack on cooldown");
     if (getIsTrapped()) return;
     if (getInJump() || getInFall())
       return console.log("cant attack while jumping");
-    if (getIsLeftAttacking()) return console.log("cant attack while attacking");
+    if (getIsAttacking()) return console.log("cant attack while attacking");
     console.log("attacking left");
 
-    isAttackingLeft = true;
-    isAttackLeftCooldown = true;
+    isAttacking = true;
+    isAttackCooldown = true;
+    attackDirection = 'left'
 
     playerSprites.attackLeft.setSequence(attackRightSequences);
     playerSprites.attackLeft.setXY(
@@ -312,7 +268,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     playerSprites.movement.setXY(-100, -100);
 
     setTimeout(() => {
-      isAttackingLeft = false;
+      isAttacking = false;
       playerSprites.movement.setXY(
         playerSprites.attackLeft.getXY().x,
         playerSprites.attackLeft.getXY().y
@@ -323,13 +279,71 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }, 700);
 
     setTimeout(() => {
-      isAttackLeftCooldown = false;
+      isAttackCooldown = false;
     }, 5000);
   };
+
+  const attackRight = function () {
+    if (getIsTakingHit()) return console.log("taking hit");
+    if (getIsAttackCooldown()) return console.log("attack on cooldown");
+    if (getIsTrapped()) return;
+    if (getInJump() || getInFall())
+      return console.log("cant attack while jumping");
+    if (getIsAttacking())
+      return console.log("cant attack while attacking");
+    console.log("attacking right");
+
+    isAttacking = true;
+    isAttackCooldown = true;
+    attackDirection = 'right'
+
+    playerSprites.attackRight.setSequence(attackRightSequences);
+    playerSprites.attackRight.setXY(
+      playerSprites.movement.getXY().x,
+      playerSprites.movement.getXY().y - 5
+    );
+    // hide player sprite
+    playerSprites.movement.setXY(-100, -100);
+
+    setTimeout(() => {
+      isAttacking = false;
+      playerSprites.movement.setXY(
+        playerSprites.attackRight.getXY().x,
+        playerSprites.attackRight.getXY().y
+      );
+      playerSprites.movement.setSequence(sequences.idle);
+      // remove attack sprite
+      playerSprites.attackRight.setXY(-100, -100);
+    }, 700);
+
+    setTimeout(() => {
+      isAttackCooldown = false;
+    }, 5000);
+  };
+
+  const getAttackPosition = () =>{
+    if(attackDirection==='left'){
+      return playerSprites.attackLeft.getXY();
+    }else 
+    if(attackDirection==='right'){
+      return playerSprites.attackRight.getXY();
+    }
+    console.log("Invalid Arguments for attack")
+    return {x:0,y:0}
+  }
+
+  const getIsAttacking = () => {
+    return isAttacking;
+  };
+  const getIsAttackCooldown = () => {
+    return isAttackCooldown;
+  };
+
 
   const getIsTakingHit = () => {
     return isTakingHit;
   };
+
   const takeHit = function () {
     if (getIsTakingHit()) return console.log("already taking hit");
     if (getIsTrapped()) return;
@@ -471,7 +485,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       }
     }
 
-    if (gameArea.isPointInBox(x, y)) playerSprites.movement.setXY(x, y);
+  if (gameArea.isPointInBox(x, y)) playerSprites.movement.setXY(x, y);
     /* Update the sprite object */
     playerSprites.movement.update(time);
   };
@@ -485,6 +499,20 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   const updateTakeHit = function (time) {
     playerSprites.death.update(time);
   };
+
+  const draw = function (){
+    if (isAttacking){
+      if(attackDirection==='left'){
+        return playerSprites.attackLeft.draw()
+      }else{
+        return playerSprites.attackRight.draw()
+      }
+    }
+    if (isTakingHit){
+      return playerSprites.death.draw()
+    }
+    return playerSprites.movement.draw()
+  }
 
   // The methods are returned as an object here.
   return {
@@ -502,10 +530,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     speedUp: speedUp,
     slowDown: slowDown,
     getBoundingBox: playerSprites.movement.getBoundingBox,
-    draw: playerSprites.movement.draw,
-    drawAttackRight: playerSprites.attackRight.draw,
-    drawAttackLeft: playerSprites.attackLeft.draw,
-    drawTakingHit: playerSprites.death.draw,
+    draw: draw,
     updateSocketPlayerMovement: updateSocketPlayerMovement,
     update: update,
     udpateAttackRight,
@@ -514,14 +539,11 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     trap,
     setIsTrapped,
     getIsTrapped,
-    attackLeft,
-    attackRight,
-    getIsRightAttacking,
-    getIsLeftAttackCooldown,
-    getIsRightAttackCooldown,
-    getRightAttackPosition,
-    getLeftAttackPosition,
-    getIsLeftAttacking,
+    attack: attack,
+    getIsAttacking: getIsAttacking,
+    getIsAttackCooldown: getIsAttackCooldown,
+    getAttackPosition,
+    getIsAttacking: getIsAttacking,
     takeHit,
     getIsTakingHit,
   };
