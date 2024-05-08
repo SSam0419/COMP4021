@@ -4,6 +4,7 @@
 // Update of UI will be handle using websocket
 // When user input, user should do action corresponds to the correct player through websocket
 const GameServer = function () {
+  let isGameEnd = false;
   let gameStartTime = 0; // The timestamp when the game starts
   let transporterCooldown = 5000; // The cooldown for using the transporter
   let transporterTimeStamp = 0;
@@ -63,8 +64,28 @@ const GameServer = function () {
     }
   };
 
+  const reset = function () {
+    console.log("reseting game stat");
+    isGameEnd = false;
+    gameStartTime = 0;
+    playerStatus = {
+      1: { username: "", score: 0 },
+      2: { username: "", score: 0 },
+    };
+    playerCoord = { 1: { x: 215, y: 580 }, 2: { x: 412, y: 580 } };
+    coinCoord = { x: 0, y: 0 };
+    teleporterCoord = { 1: { x: 0, y: 0 }, 2: { x: 0, y: 0 } };
+    trapCoord = { x: 0, y: 0 };
+    coinAge = -1;
+    teleporterAge = { 1: -1, 2: -1 };
+    trapAge = -1;
+    sockets = { 1: null, 2: null };
+  };
+
   // Be called by server socket
   const initialize = function (username1, username2) {
+    gameStartTime = Date.now();
+    isGameEnd = false;
     playerStatus[1].username = username1;
     playerStatus[2].username = username2;
     coinCoord = randomCoinPoint();
@@ -76,54 +97,73 @@ const GameServer = function () {
     teleporterAge[2] = randomAge(transporterMaxAge);
     trapAge = randomAge(trapMaxAge);
     setTimeout(() => gameTick(), 1000);
-    // gameTick();
   };
 
   // Natural Update By Time
   const gameTick = function () {
-    gameStartTime += 1;
-    coinAge += 150;
-    teleporterAge[1] += 500;
-    teleporterAge[2] += 500;
-    trapAge += 1000;
+    if (!isGameEnd) {
+      coinAge += 150;
+      teleporterAge[1] += 500;
+      teleporterAge[2] += 500;
+      trapAge += 1000;
 
-    if (coinAge >= coinMaxAge) {
-      coinCoord = randomCoinPoint();
-      coinAge = randomAge(coinMaxAge);
-    }
+      if (coinAge >= coinMaxAge) {
+        coinCoord = randomCoinPoint();
+        coinAge = randomAge(coinMaxAge);
+      }
 
-    for (let i = 1; i <= 2; ++i) {
-      if (teleporterAge[i] >= transporterMaxAge) {
-        teleporterCoord[i] = platformCoordinates[randomPlatformIdx(i)];
-        teleporterAge[i] = randomAge(transporterMaxAge);
+      for (let i = 1; i <= 2; ++i) {
+        if (teleporterAge[i] >= transporterMaxAge) {
+          teleporterCoord[i] = platformCoordinates[randomPlatformIdx(i)];
+          teleporterAge[i] = randomAge(transporterMaxAge);
+        }
+      }
+
+      if (trapAge >= transporterMaxAge) {
+        trapCoord = platformCoordinates[randomPlatformIdx(3)];
+        trapAge = randomAge(trapMaxAge);
+      }
+
+      for (let i = 1; i <= 2; ++i) {
+        if (sockets[i])
+          sockets[i].emit("game stat", JSON.stringify(packReturn()));
       }
     }
 
-    if (trapAge >= transporterMaxAge) {
-      trapCoord = platformCoordinates[randomPlatformIdx(3)];
-      trapAge = randomAge(trapMaxAge);
-    }
-
-    for (let i = 1; i <= 2; ++i) {
-      sockets[i].emit("game stat", JSON.stringify(packReturn()));
-    }
-
-    if (gameStartTime >= totalGameTime) {
+    if (Date.now() - gameStartTime >= totalGameTime * 1000) {
+      finishGame();
       for (let i = 1; i <= 2; ++i) {
-        sockets[i].emit("game end", JSON.stringify(packReturn()));
+        if (sockets[i])
+          sockets[i].emit("game end", JSON.stringify(packReturn()));
       }
     }
 
     for (let i = 1; i <= 2; ++i) {
       if (playerStatus[i].score >= maxScore) {
-        sockets[i].emit("game end", JSON.stringify(packReturn()));
+        finishGame();
+        for (let i = 1; i <= 2; ++i) {
+          if (sockets[i])
+            sockets[i].emit("game end", JSON.stringify(packReturn()));
+        }
       }
     }
+
     setTimeout(() => gameTick(), 1000);
   };
 
+  const finishGame = () => {
+    isGameEnd = true;
+    for (let i = 1; i <= 2; ++i) {
+      if (sockets[i])
+        sockets[i].emit("game stat", JSON.stringify(packReturn()));
+    }
+  };
+
   const packReturn = function () {
-    const score = { score1: playerStatus[1].score, score2: playerStatus[2].score };
+    const score = {
+      score1: playerStatus[1].score,
+      score2: playerStatus[2].score,
+    };
     return {
       gameStartTime,
       coinCoord,
@@ -131,6 +171,7 @@ const GameServer = function () {
       trapCoord,
       playerCoord,
       score,
+      isGameEnd,
     };
   };
 
@@ -170,8 +211,6 @@ const GameServer = function () {
   };
 
   const playerCollectedCoin = function (player) {
-    // log event
-    console.log("Player " + player + " collected a coin");
     playerStatus[player].score += 1;
     coinCoord = randomCoinPoint();
     coinAge = randomAge(coinMaxAge);
@@ -197,6 +236,13 @@ const GameServer = function () {
     }, 2000);
   };
 
+  const quitGame = function (player) {
+    sockets[player] = null;
+    if (sockets[1] == null && sockets[2] == null) {
+      reset();
+    }
+  };
+
   // The methods are returned as an object here.
   return {
     initialize: initialize,
@@ -206,6 +252,7 @@ const GameServer = function () {
     playerCollectedCoin,
     playerTeleported,
     playerTrapped,
+    quitGame,
   };
 };
 

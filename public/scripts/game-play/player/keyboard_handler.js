@@ -5,6 +5,8 @@ function handleKeydown(
   playerSlot,
   initComplete
 ) {
+  let { isGameEnd } = GameObjectsConfig.getConfig();
+  if (isGameEnd) return;
   if (!initComplete) return;
   if (playerInstance.getIsAttacking()) return console.log("attacking");
   if (playerInstance.getIsTakingHit())
@@ -40,6 +42,8 @@ function handleKeydown(
 }
 
 function handleKeyup(event, roomNum, playerSlot, playerInstance) {
+  let { isGameEnd } = GameObjectsConfig.getConfig();
+  if (isGameEnd) return;
   switch (event.keyCode) {
     case 37: // Left arrow
       playerInstance.stop(1);

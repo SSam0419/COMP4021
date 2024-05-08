@@ -12,6 +12,8 @@ function handleGameEvents(
   transporterCooldown,
   setTransporterTimeStamp
 ) {
+  let { isGameEnd } = GameObjectsConfig.getConfig();
+  if (isGameEnd) return;
   const { roomNum, playerSlot } = GameroomConfig.getConfig();
 
   //handle player right attack
@@ -47,7 +49,10 @@ function handleGameEvents(
   if (player.getBoundingBox().isPointInBox(coin.getXY().x, coin.getXY().y)) {
     Notification(player.getPlayerSlot(), "coin");
     coin.setXY(-5, -5);
-    Socket.playerCollectedCoin(roomNum, playerSlot);
+    //only emit when my player collect the coin
+    if (player.getPlayerSlot() === playerSlot) {
+      Socket.playerCollectedCoin(roomNum, playerSlot);
+    }
   }
 
   //handle trap

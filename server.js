@@ -169,13 +169,13 @@ io.on("connection", (socket) => {
   socket.on("player attack", (message) => {
     const { room, player, direction } = JSON.parse(message);
     // gameServers[room].playerAttackRight(player);
-    if(direction==='left'){
+    if (direction === "left") {
       const keyCode = 68;
       io.emit(
         "game keys event",
         JSON.stringify({ room, player, keyCode, event: "attackRight" })
       );
-    }else if(direction==='right'){
+    } else if (direction === "right") {
       const keyCode = 65;
       io.emit(
         "game keys event",
@@ -196,6 +196,12 @@ io.on("connection", (socket) => {
     const { room, player } = JSON.parse(message);
     console.log(`player ${player} is trapped`);
     gameServers[room].playerTrapped(player);
+  });
+  socket.on("quit game", (message) => {
+    const { room, player } = JSON.parse(message);
+    global.gameRooms[room][`player${player}`] = null;
+    io.emit("room joint", JSON.stringify(gameRooms));
+    gameServers[room].quitGame(player);
   });
 });
 
