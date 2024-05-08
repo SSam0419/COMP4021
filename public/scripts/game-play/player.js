@@ -4,94 +4,16 @@
 // - `y` - The initial y position of the player
 
 // - `gameArea` - The bounding box of the game area
+
 const Player = function (ctx, x, y, gameArea, playerSlot) {
   let isTrapped = false;
   let isAttacking = false;
   let isAttackCooldown = false;
   let isTakingHit = false;
+
   // This is the sprite sequences of the player facing different directions.
-  const sequences = {
-    idle: {
-      x: 640,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 8,
-      timing: 100,
-      loop: true,
-      orientation: "right",
-    },
-    idleLeft: {
-      x: 1920,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 8,
-      timing: 100,
-      loop: true,
-      orientation: "left",
-    },
-    run: {
-      x: 3840,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 8,
-      timing: 100,
-      loop: true,
-      orientation: "right",
-    },
-    runLeft: {
-      x: 5120,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 8,
-      timing: 100,
-      loop: true,
-      orientation: "left",
-    },
-    jump: {
-      x: 3200,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 2,
-      timing: 100,
-      loop: true,
-      orientation: "right",
-    },
-    jumpLeft: {
-      x: 3520,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 2,
-      timing: 100,
-      loop: true,
-      orientation: "left",
-    },
-    fall: {
-      x: 0,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 2,
-      timing: 100,
-      loop: true,
-      orientation: "right",
-    },
-    fallLeft: {
-      x: 320,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 2,
-      timing: 100,
-      loop: true,
-      orientation: "left",
-    },
-  };
+  const sequences = MOVEMENT_SEQUENCES;
+
   const attackRightSequences = {
     x: 0,
     y: 48,
@@ -173,7 +95,9 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       fall();
     }
   };
-
+  const getAttackDirection = () => {
+    return attackDirection;
+  };
   const getInCollider = function () {
     return inCollider;
   };
@@ -550,5 +474,6 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     takeHit,
     getIsTakingHit,
     getPlayerSlot,
+    getAttackDirection,
   };
 };
