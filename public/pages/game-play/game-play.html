@@ -17,11 +17,54 @@
   </head>
   <body>
     <div id="overlay"><h1>Loading ...</h1></div>
+
+    <div id="game-over-overlay" style="display: none">
+      <div id="game-over-content" style="width: 500px">
+        <h1 style="text-align: center">
+          Game Over
+
+          <h2
+            class="text-danger"
+            style="text-align: center"
+            id="game-over-message"
+          ></h2>
+        </h1>
+
+        <div style="display: flex; gap: 5px; justify-content: space-between">
+          <div>
+            <h3>Player 1</h3>
+            <h4>
+              <span class="score-1">Score : _</span>
+              <span class="text-muted>">/30</span>
+            </h4>
+          </div>
+          <div>
+            <h3>Player 2</h3>
+            <h4>
+              <span class="score-2">Score : _</span>
+              <span class="text-muted">/30</span>
+            </h4>
+          </div>
+        </div>
+
+        <div>
+          <!-- on click go back to /game-rooms -->
+          <button
+            id="quit-btn"
+            class="primary-button"
+            onclick="location.href='/game-rooms'"
+          >
+            Quit
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div id="game-play-area">
       <div id="player-1-board" class="player-board">
         <h3 id="player-1">Player 1</h3>
         <h4>
-          <span id="score-1">Score : 0 </span>
+          <span class="score-1">Score : 10 </span>
           <span class="text-muted">/30</span>
         </h4>
         <div>
@@ -44,39 +87,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" id="counter">
           <text x="10" y="35">
             TIME:
-            <tspan id="time-remaining">20</tspan>
-          </text>
-        </svg>
-
-        <!-- <svg xmlns="http://www.w3.org/2000/svg" id="game-start">
-                <defs>
-                    <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0.2" stop-color="red" />
-                        <stop offset="0.4" stop-color="yellow" />
-                        <stop offset="0.6" stop-color="green" />
-                        <stop offset="0.8" stop-color="purple" />
-                    </linearGradient>
-                </defs>
-                <text id="game-title" x="50%" y="45%">BEFORE TWILIGHT...</text>
-                <text x="50%" y="60%">Click here to start the game</text>
-            </svg> -->
-
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          id="game-over"
-          style="display: none"
-        >
-          <defs>
-            <linearGradient id="game-over-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="red" />
-              <stop offset="0.5" stop-color="yellow" />
-              <stop offset="1" stop-color="red" />
-            </linearGradient>
-          </defs>
-          <text x="50%" y="50%" id="game-over-text">
-          </text>
-          <text x="50%" y="75%"id="leave-button">
-            Back to Game Room
+            <tspan id="time-remaining">4:00</tspan>
           </text>
         </svg>
       </div>
@@ -84,7 +95,7 @@
       <div id="player-2-board" class="player-board">
         <h3 id="player-2">Player 2</h3>
         <h4>
-          <span id="score-2">Score : 0 </span>
+          <span class="score-2">Score : 10 </span>
           <span class="text-muted">/30</span>
         </h4>
         <div>
@@ -131,10 +142,13 @@
     <script src="scripts/multiplayer/gameroom_config.js"></script>
     <script src="scripts/multiplayer/gameobjects_config.js"></script>
     <script src="scripts/ui/game-rooms.js"></script>
-
+    <!-- util -->
     <script src="pages/game-play/util/notification.js"></script>
+    <script src="pages/game-play/util/countdown.js"></script>
+
     <script>
-      $(async function () {
+      $(function () {
+        let isGameEnd = false;
         let roomNum = null;
         let playerSlot = null;
         const maxScore = 30;
@@ -176,8 +190,8 @@
         const floor = Floor(context, 0, 611);
 
         const coordinates = [
-          { x: 74, y:532},
-          { x: 28, y:532},
+          { x: 74, y: 532 },
+          { x: 28, y: 532 },
           { x: 33, y: 223 },
           { x: 33, y: 103 },
           { x: 178, y: 463 },
@@ -245,12 +259,13 @@
                 isPlayer1 ? "rgba(106, 0, 30, 1)" : "rgba(0, 0, 255, 0.8)"
               );
               $("h3#player-2").text(isPlayer1 ? "Enemy" : "Me");
+
+              // start timer
+              startCountdown();
             }
           }
 
           if (initComplete) {
-            // $("#time-remaining").text(timeRemaining);
-
             if (GameObjectsConfig.hasUpdate()) {
               let {
                 gameStartTime,
@@ -260,6 +275,7 @@
                 playerCoord,
                 score,
               } = GameObjectsConfig.getConfig();
+
               coin.setXY(coinCoord.x, coinCoord.y);
               for (let i = 1; i <= 2; ++i) {
                 transporters[i].setXY(
@@ -271,26 +287,9 @@
               player1.setXY(playerCoord[1].x, playerCoord[1].y);
               player2.setXY(playerCoord[2].x, playerCoord[2].y);
 
-              const timeRemaining = totalGameTime - gameStartTime
-              $("#time-remaining").text(timeRemaining)
-              if(timeRemaining < 60){
-                $("#counter text").css("stroke","red")
-              }
-
               const { score1, score2 } = score;
-              $("#score-1").text("Score: " + score1);
-              $("#score-2").text("Score: " + score2);
-              myScore = playerSlot===1? score1:score2
-              opponentScore = playerSlot===1? score2:score1
-
-              if(myScore >= maxScore || opponentScore >= maxScore || gameStartTime>=totalGameTime){
-                console.log("End game")
-                endGame()
-                $('#leave-button').on('click', function(){
-                  window.location.href = "/game-rooms";
-                })
-                return
-              }
+              $(".score-1").text("Score: " + score1);
+              $(".score-2").text("Score: " + score2);
             }
 
             /* Update the sprites */
@@ -318,11 +317,11 @@
             $skill.toggleClass("text-danger", isCooldown);
             $skill.toggleClass("text-success", !isCooldown);
 
-            if(hasInteracted){
-              if(player1.getIsCheating() || player2.getIsCheating()){
-                Sounds.playBGM("bgmCheat",0.5)
-              }else{
-                Sounds.playBGM("bgm",0.5)
+            if (hasInteracted) {
+              if (player1.getIsCheating() || player2.getIsCheating()) {
+                Sounds.playBGM("bgmCheat", 0.5);
+              } else {
+                Sounds.playBGM("bgm", 0.5);
               }
             }
 
@@ -371,18 +370,14 @@
           requestAnimationFrame(doFrame);
         }
 
-        const endGame = function(){
-          Sounds.stopBGM()
-          displayTxt = myScore > opponentScore? 'You Win!': 'You Lose...'
-          displayTxt = myScore === opponentScore? 'Draw': displayTxt
-          if(myScore > opponentScore){
-            Sounds.play('win')
-          }else{
-            Sounds.play('lose')
+        const endGame = function () {
+          Sounds.stopBGM();
+          if (myScore > opponentScore) {
+            Sounds.play("win");
+          } else {
+            Sounds.play("lose");
           }
-          $('#game-over').show()
-          $('#game-over-text').text(displayTxt)
-        }
+        };
 
         $(document).on("keydown", function (event) {
           hasInteracted = true;
@@ -406,21 +401,27 @@
             handlePlayerMovementSocket(player1, player2, message);
           });
         }
+
         $(document).on("click", function (event) {
           console.log("===========info============");
           console.log("I am Player: ", playerInstance.getPlayerSlot());
-          const canvas = document.getElementById('game-container'); // replace 'your-canvas-id' with your actual canvas id
+          const canvas = document.getElementById("game-container"); // replace 'your-canvas-id' with your actual canvas id
 
           const rect = canvas.getBoundingClientRect();
           const x = event.clientX - rect.left;
           const y = event.clientY - rect.top;
-      
+
           console.log("x: " + x + " y: " + y);
           console.log("========end of info=========");
         });
 
         /* Start the game */
         requestAnimationFrame(doFrame);
+
+        // for quiting game
+        $("#quit-btn").on("click", function () {
+          Socket.quitGame(roomNum, playerSlot);
+        });
       });
     </script>
   </body>

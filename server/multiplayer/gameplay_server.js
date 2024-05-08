@@ -4,6 +4,7 @@
 // Update of UI will be handle using websocket
 // When user input, user should do action corresponds to the correct player through websocket
 const GameServer = function () {
+  let isGameEnd = false;
   let gameStartTime = 0; // The timestamp when the game starts
   let transporterCooldown = 5000; // The cooldown for using the transporter
   let transporterTimeStamp = 0;
@@ -35,8 +36,7 @@ const GameServer = function () {
     { x: 58, y: 343 },
   ];
 
-  let objIndexes = { 1: -1, 2: -1};
-  let gameEnd = false;
+  let objIndexes = { 1: -1, 2: -1 };
   let playerStatus = {
     1: { username: "", score: 0 },
     2: { username: "", score: 0 },
@@ -64,14 +64,32 @@ const GameServer = function () {
     }
   };
 
-  const deattachSocket = function (slot){
-    sockets[slot] = null
-  }
+  const reset = function () {
+    console.log("reseting game stat");
+    isGameEnd = false;
+    gameStartTime = 0;
+    playerStatus = {
+      1: { username: "", score: 0 },
+      2: { username: "", score: 0 },
+    };
+    playerCoord = { 1: { x: 215, y: 580 }, 2: { x: 412, y: 580 } };
+    coinCoord = { x: 0, y: 0 };
+    teleporterCoord = { 1: { x: 0, y: 0 }, 2: { x: 0, y: 0 } };
+    trapCoord = { x: 0, y: 0 };
+    coinAge = -1;
+    teleporterAge = { 1: -1, 2: -1 };
+    trapAge = -1;
+    sockets = { 1: null, 2: null };
+  };
+
+  const deattachSocket = function (slot) {
+    sockets[slot] = null;
+  };
 
   // Be called by server socket
   const initialize = function (username1, username2) {
-    gameStartTime = 0
-    gameEnd = false;
+    gameStartTime = Date.now();
+    isGameEnd = false;
     playerStatus = {
       1: { username: username1, score: 0 },
       2: { username: username2, score: 0 },
@@ -81,56 +99,85 @@ const GameServer = function () {
     coinCoord = randomCoinPoint();
     teleporterCoord[1] = platformCoordinates[randomPlatformIdx(1)];
     teleporterCoord[2] = platformCoordinates[randomPlatformIdx(2)];
-    trapCoord = platformCoordinates[Math.floor(Math.random() * platformCoordinates.length)];
+    trapCoord =
+      platformCoordinates[
+        Math.floor(Math.random() * platformCoordinates.length)
+      ];
     coinAge = randomAge(coinMaxAge);
     teleporterAge[1] = randomAge(transporterMaxAge);
     teleporterAge[2] = randomAge(transporterMaxAge);
     trapAge = randomAge(trapMaxAge);
-    gameTick()
+    gameTick();
   };
 
   // Natural Update By Time
   const gameTick = function () {
-    gameStartTime += 1;
-    coinAge += 150;
-    teleporterAge[1] += 500;
-    teleporterAge[2] += 500;
-    trapAge += 1000;
+    if (!isGameEnd) {
+      coinAge += 150;
+      teleporterAge[1] += 500;
+      teleporterAge[2] += 500;
+      trapAge += 1000;
 
-    if (coinAge >= coinMaxAge) {
-      coinCoord = randomCoinPoint();
-      coinAge = randomAge(coinMaxAge);
-    }
+      if (coinAge >= coinMaxAge) {
+        coinCoord = randomCoinPoint();
+        coinAge = randomAge(coinMaxAge);
+      }
 
-    for (let i = 1; i <= 2; ++i) {
-      if (teleporterAge[i] >= transporterMaxAge) {
-        teleporterCoord[i] = platformCoordinates[randomPlatformIdx(i)];
-        teleporterAge[i] = randomAge(transporterMaxAge);
+      for (let i = 1; i <= 2; ++i) {
+        if (teleporterAge[i] >= transporterMaxAge) {
+          teleporterCoord[i] = platformCoordinates[randomPlatformIdx(i)];
+          teleporterAge[i] = randomAge(transporterMaxAge);
+        }
+      }
+
+      if (trapAge >= transporterMaxAge) {
+        trapCoord =
+          platformCoordinates[
+            Math.floor(Math.random() * platformCoordinates.length)
+          ];
+        trapAge = randomAge(trapMaxAge);
+      }
+
+      for (let i = 1; i <= 2; ++i) {
+        if (sockets[i])
+          sockets[i].emit("game stat", JSON.stringify(packReturn()));
       }
     }
 
-    if (trapAge >= transporterMaxAge) {
-      trapCoord = platformCoordinates[Math.floor(Math.random() * platformCoordinates.length)];
-      trapAge = randomAge(trapMaxAge);
+    if (Date.now() - gameStartTime >= totalGameTime * 1000) {
+      finishGame();
+      for (let i = 1; i <= 2; ++i) {
+        if (sockets[i])
+          sockets[i].emit("game end", JSON.stringify(packReturn()));
+      }
     }
 
     for (let i = 1; i <= 2; ++i) {
-      if(sockets[i] !== null){
-        sockets[i].emit("game stat", JSON.stringify(packReturn()));
+      if (playerStatus[i].score >= maxScore) {
+        finishGame();
+        for (let i = 1; i <= 2; ++i) {
+          if (sockets[i])
+            sockets[i].emit("game end", JSON.stringify(packReturn()));
+        }
       }
     }
-    const score1 = playerStatus[1].score 
-    const score2 = playerStatus[2].score
-    if(score1>=maxScore || score2 >= maxScore || gameStartTime >= totalGameTime){
-      gameEnd = true;
-      console.log("Game end, stop running server")
-      return;
-    }
+
     setTimeout(() => gameTick(), 1000);
   };
 
+  const finishGame = () => {
+    isGameEnd = true;
+    for (let i = 1; i <= 2; ++i) {
+      if (sockets[i])
+        sockets[i].emit("game stat", JSON.stringify(packReturn()));
+    }
+  };
+
   const packReturn = function () {
-    const score = { score1: playerStatus[1].score, score2: playerStatus[2].score };
+    const score = {
+      score1: playerStatus[1].score,
+      score2: playerStatus[2].score,
+    };
     return {
       gameStartTime,
       coinCoord,
@@ -138,6 +185,7 @@ const GameServer = function () {
       trapCoord,
       playerCoord,
       score,
+      isGameEnd,
     };
   };
 
@@ -176,18 +224,16 @@ const GameServer = function () {
     }
   };
 
-  const isGameEnd = function() {
-    return gameEnd
-  }
+  const getIsGameEnd = function () {
+    return isGameEnd;
+  };
 
   const playerCollectedCoin = function (player) {
-    // log event
-    console.log("Player " + player + " collected a coin");
     playerStatus[player].score += 1;
     coinCoord = randomCoinPoint();
     coinAge = randomAge(coinMaxAge);
     for (let i = 1; i <= 2; ++i) {
-      if(sockets[i] !== null){
+      if (sockets[i] !== null) {
         sockets[i].emit("game stat", JSON.stringify(packReturn()));
       }
     }
@@ -203,20 +249,30 @@ const GameServer = function () {
   };
 
   const playerTrapped = function (player) {
-    if(isTrapped) return;
+    if (isTrapped) return;
     // log event
     console.log("Player " + player + " trapped");
     isTrapped = true;
     // reset coord after 3 seconds
     trapAge = 0;
-    if(trapTimeout !== null){
-      clearTimeout(trapTimeout)
+    if (trapTimeout !== null) {
+      clearTimeout(trapTimeout);
     }
     trapTimeout = setTimeout(() => {
-      trapCoord = platformCoordinates[Math.floor(Math.random() * platformCoordinates.length)];
+      trapCoord =
+        platformCoordinates[
+          Math.floor(Math.random() * platformCoordinates.length)
+        ];
       trapAge = randomAge(trapMaxAge);
       isTrapped = false;
     }, 2000);
+  };
+
+  const quitGame = function (player) {
+    sockets[player] = null;
+    if (sockets[1] == null && sockets[2] == null) {
+      reset();
+    }
   };
 
   // The methods are returned as an object here.
@@ -228,8 +284,9 @@ const GameServer = function () {
     playerCollectedCoin,
     playerTeleported,
     playerTrapped,
+    quitGame,
     deattachSocket,
-    isGameEnd
+    getIsGameEnd,
   };
 };
 

@@ -132,7 +132,8 @@ io.on("connection", (socket) => {
   socket.on("get game config", (message) => {
     console.log("get game config socket triggered");
     const username = socket.request.session.user.username;
-    let roomNum, player = -1;
+    let roomNum,
+      player = -1;
     for (let i = 1; i <= Object.keys(gameRooms).length; i++) {
       for (let j = 1; j <= 2; j++) {
         if (gameRooms[i][`player${j}`] === username) {
@@ -140,10 +141,6 @@ io.on("connection", (socket) => {
           player = j;
         }
       }
-    }
-    if(roomNum===-1 || gameServers[roomNum].isGameEnd()) {
-        console.log("Game ended")
-        return socket.emit('end game')
     }
 
     gameServers[roomNum].setSocket(username, socket);
@@ -172,13 +169,13 @@ io.on("connection", (socket) => {
   socket.on("player attack", (message) => {
     const { room, player, direction } = JSON.parse(message);
     // gameServers[room].playerAttackRight(player);
-    if(direction==='left'){
+    if (direction === "left") {
       const keyCode = 68;
       io.emit(
         "game keys event",
         JSON.stringify({ room, player, keyCode, event: "attackRight" })
       );
-    }else if(direction==='right'){
+    } else if (direction === "right") {
       const keyCode = 65;
       io.emit(
         "game keys event",
@@ -199,6 +196,12 @@ io.on("connection", (socket) => {
     const { room, player } = JSON.parse(message);
     console.log(`player ${player} is trapped`);
     gameServers[room].playerTrapped(player);
+  });
+  socket.on("quit game", (message) => {
+    const { room, player } = JSON.parse(message);
+    global.gameRooms[room][`player${player}`] = null;
+    io.emit("room joint", JSON.stringify(gameRooms));
+    gameServers[room].quitGame(player);
   });
   socket.on("player cheat", (message) => {
     const { room, player } = JSON.parse(message);

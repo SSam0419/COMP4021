@@ -12,17 +12,18 @@ function handleGameEvents(
   transporterCooldown,
   setTransporterTimeStamp
 ) {
+  let { isGameEnd } = GameObjectsConfig.getConfig();
+  if (isGameEnd) return;
   const { roomNum, playerSlot } = GameroomConfig.getConfig();
 
   //handle player attack
   if (player.getIsAttacking()) {
-    Sounds.play('attack')
+    Sounds.play("attack");
 
     if (player.getAttackDirection() == "right") {
       if (
-        Math.abs(
-          player.getAttackPosition().y - opponentPlayer.getXY().y
-        ) < 15 &&
+        Math.abs(player.getAttackPosition().y - opponentPlayer.getXY().y) <
+          15 &&
         // opponent is on the right within 50px
         opponentPlayer.getXY().x - player.getAttackPosition().x < 60 &&
         player.getAttackPosition().x - opponentPlayer.getXY().x < 0
@@ -32,12 +33,11 @@ function handleGameEvents(
         Notification(player.getPlayerSlot() == 1 ? 2 : 1, "get hit");
       }
     } else {
-      console.log(player.getAttackDirection())
-      console.log(player.getAttackPosition().x - opponentPlayer.getXY().x)
+      console.log(player.getAttackDirection());
+      console.log(player.getAttackPosition().x - opponentPlayer.getXY().x);
       if (
-        Math.abs(
-          player.getAttackPosition().y - opponentPlayer.getXY().y
-        ) < 15 &&
+        Math.abs(player.getAttackPosition().y - opponentPlayer.getXY().y) <
+          15 &&
         // opponent is on the left within 50px
         player.getAttackPosition().x - opponentPlayer.getXY().x < 60 &&
         opponentPlayer.getXY().x - player.getAttackPosition().x > -60
@@ -51,10 +51,13 @@ function handleGameEvents(
 
   //handle coin
   if (coin.getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y)) {
-    Sounds.playDirect('coin',0.8)
+    Sounds.playDirect("coin", 0.8);
     Notification(player.getPlayerSlot(), "coin");
     coin.setXY(-100, -100);
-    Socket.playerCollectedCoin(roomNum, playerSlot);
+    //only emit when my player collect the coin
+    if (player.getPlayerSlot() === playerSlot) {
+      Socket.playerCollectedCoin(roomNum, playerSlot);
+    }
   }
 
   //handle trap

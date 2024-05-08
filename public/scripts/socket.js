@@ -10,11 +10,7 @@ const Socket = (function () {
   // This function connects the server and initializes the socket
   const connect = function () {
     socket = io();
-    console.log("Connecting to the server");
-    // Wait for the socket to connect successfully
     socket.on("connect", () => {
-      console.log("Connected to the server");
-
       socket.emit("get online players");
     });
 
@@ -55,6 +51,7 @@ const Socket = (function () {
         trapCoord,
         playerCoord,
         score,
+        isGameEnd,
       } = JSON.parse(message);
       GameObjectsConfig.setConfig(
         gameStartTime,
@@ -62,7 +59,8 @@ const Socket = (function () {
         teleporterCoord,
         trapCoord,
         playerCoord,
-        score
+        score,
+        isGameEnd
       );
     });
 
@@ -70,12 +68,52 @@ const Socket = (function () {
       window.location.href = "/game-play";
     });
 
-    socket.on("end game", ()=>{
-      console.log("game ended")
-      alert("Game Ended, Please Rejoin New Gameroom")
-      socket.emit()
-      window.location.href = "/game-rooms";
-    })
+    socket.on("game end", (message) => {
+      const { score } = JSON.parse(message);
+      const { roomNum, playerSlot } = GameroomConfig.getConfig();
+      console.log("Game Over");
+      console.log(JSON.parse(message));
+      const $text = $("#game-over-overlay #game-over-message");
+      if (playerSlot === 1) {
+        if (score.score1 > score.score2) {
+          if (score.score1 < 30) {
+            $text.text("Time's up! You won!");
+            $text.attr("class", "text-success");
+          } else {
+            $text.text("You got 30 coins! You won!");
+            $text.attr("class", "text-success");
+          }
+        } else {
+          if (score.score2 < 30) {
+            $text.text("Time's up! You lost.");
+            $text.attr("class", "text-danger");
+          } else {
+            $text.text("Your opponent got 30 coins first. You lost.");
+            $text.attr("class", "text-danger");
+          }
+        }
+      } else {
+        if (score.score2 > score.score1) {
+          if (score.score2 < 30) {
+            $text.text("Time's up! You won!");
+            $text.attr("class", "text-success");
+          } else {
+            $text.text("You got 30 coins! You won!");
+            $text.attr("class", "text-success");
+          }
+        } else {
+          if (score.score1 < 30) {
+            $text.text("Time's up! You lost.");
+            $text.attr("class", "text-danger");
+          } else {
+            $text.text("Your opponent got 30 coins first. You lost.");
+            $text.attr("class", "text-danger");
+          }
+        }
+      }
+
+      $("#game-over-overlay").show();
+    });
   };
 
   const disconnect = function () {
@@ -137,8 +175,12 @@ const Socket = (function () {
     socket.emit("player trap", JSON.stringify(message));
   };
   const playerAttack = function (room, player, direction) {
-    message = { room, player, direction};
+    message = { room, player, direction };
     socket.emit("player attack", JSON.stringify(message));
+  };
+  const quitGame = function (room, player) {
+    message = { room, player };
+    socket.emit("quit game", JSON.stringify(message));
   };
 
   return {
@@ -155,6 +197,7 @@ const Socket = (function () {
     playerCollectedCoin,
     playerTeleported,
     playerTrapped,
-    playerAttack
+    playerAttack,
+    quitGame,
   };
 })();
