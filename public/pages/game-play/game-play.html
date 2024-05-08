@@ -112,6 +112,7 @@
     <!-- IMPORT GAME PLAY RELATED -->
     <script src="scripts/game-play/player/player_events.js"></script>
     <script src="scripts/game-play/player/keyboard_handler.js"></script>
+    <script src="scripts/game-play/player/socket_movement_handler.js"></script>
     <script src="scripts/game-play/player.js"></script>
     <script src="scripts/game-play/coin.js"></script>
     <script src="scripts/game-play/platform.js"></script>
@@ -349,53 +350,54 @@
         const playerEventSocket = io();
         if (playerEventSocket) {
           playerEventSocket.on("game keys event", (message) => {
-            const { room, player, keyCode, event } = JSON.parse(message);
+            handlePlayerMovementSocket(player1, player2, message);
+            // const { room, player, keyCode, event } = JSON.parse(message);
 
-            const handlePlayerMovement = (playerInstance) => {
-              switch (event) {
-                case "keydown":
-                  switch (keyCode) {
-                    case 37:
-                      playerInstance.move(1);
-                      break;
-                    case 39:
-                      playerInstance.move(2);
-                      break;
-                    case 38:
-                      playerInstance.jump();
-                      playerInstance.setInCollider(false);
-                      break;
-                  }
-                  break;
-                case "keyup":
-                  switch (keyCode) {
-                    case 37:
-                      playerInstance.stop(1);
-                      break;
-                    case 39:
-                      playerInstance.stop(2);
-                      break;
-                  }
-                  break;
-                case "attackRight":
-                  playerInstance.stop(2);
-                  playerInstance.attack("right");
-                  break;
-                case "attackLeft":
-                  playerInstance.stop(1);
-                  playerInstance.attack("left");
-                  break;
-              }
-            };
+            // const handlePlayerMovement = (playerInstance) => {
+            //   switch (event) {
+            //     case "keydown":
+            //       switch (keyCode) {
+            //         case 37:
+            //           playerInstance.move(1);
+            //           break;
+            //         case 39:
+            //           playerInstance.move(2);
+            //           break;
+            //         case 38:
+            //           playerInstance.jump();
+            //           playerInstance.setInCollider(false);
+            //           break;
+            //       }
+            //       break;
+            //     case "keyup":
+            //       switch (keyCode) {
+            //         case 37:
+            //           playerInstance.stop(1);
+            //           break;
+            //         case 39:
+            //           playerInstance.stop(2);
+            //           break;
+            //       }
+            //       break;
+            //     case "attackRight":
+            //       playerInstance.stop(2);
+            //       playerInstance.attack("right");
+            //       break;
+            //     case "attackLeft":
+            //       playerInstance.stop(1);
+            //       playerInstance.attack("left");
+            //       break;
+            //   }
+            // };
 
-            switch (player) {
-              case 1:
-                handlePlayerMovement(player1);
-                break;
-              case 2:
-                handlePlayerMovement(player2);
-                break;
-            }
+            // switch (player) {
+            //   case 1:
+            //     handlePlayerMovement(player1);
+            //     break;
+            //   case 2:
+            //     handlePlayerMovement(player2);
+            //     break;
+            // }
           });
         }
         $(document).on("click", function (event) {
