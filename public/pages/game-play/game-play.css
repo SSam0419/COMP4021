@@ -132,8 +132,15 @@ canvas {
   stroke: black;
 }
 
-#game-over text {
-  font-size: 120%;
+#game-over-text {
+  font-size: 800%;
   fill: url(#game-over-fill);
   text-anchor: middle;
+}
+
+#leave-button {
+  font-size: 200%;
+  fill: url(#game-over-fill);
+  text-anchor: middle;
+  cursor: pointer;
 }

@@ -36,8 +36,8 @@ const GameServer = function () {
     { x: 58, y: 343 },
   ];
 
-  let objIndexes = { 1: -1, 2: -1, 3: -1 };
-
+  let objIndexes = { 1: -1, 2: -1 };
+  let gameEnd = false;
   let playerStatus = {
     1: { username: "", score: 0 },
     2: { username: "", score: 0 },
@@ -91,12 +91,15 @@ const GameServer = function () {
     coinCoord = randomCoinPoint();
     teleporterCoord[1] = platformCoordinates[randomPlatformIdx(1)];
     teleporterCoord[2] = platformCoordinates[randomPlatformIdx(2)];
-    trapCoord = platformCoordinates[randomPlatformIdx(3)];
+    trapCoord =
+      platformCoordinates[
+        Math.floor(Math.random() * platformCoordinates.length)
+      ];
     coinAge = randomAge(coinMaxAge);
     teleporterAge[1] = randomAge(transporterMaxAge);
     teleporterAge[2] = randomAge(transporterMaxAge);
     trapAge = randomAge(trapMaxAge);
-    setTimeout(() => gameTick(), 1000);
+    gameTick();
   };
 
   // Natural Update By Time
@@ -185,9 +188,9 @@ const GameServer = function () {
   // objIdx: current platform index of corresponding object, teleporter x 2, trap x 1
   const randomPlatformIdx = function (objIdx) {
     newIdx = Math.floor(Math.random() * platformCoordinates.length);
-    for (let i = 1; i <= 3; ++i) {
+    for (let i = 1; i <= 2; ++i) {
       if (i == objIdx) continue; // Allow Repeat Index for same object
-      if (newIdx == objIndexes) return randomPlatformIdx(objIdx); // Prevent Overlapping of different objects
+      if (newIdx == objIndexes[i]) return randomPlatformIdx(objIdx); // Prevent Overlapping of different objects
     }
     objIndexes[objIdx] = newIdx;
     return newIdx;
@@ -214,6 +217,11 @@ const GameServer = function () {
     playerStatus[player].score += 1;
     coinCoord = randomCoinPoint();
     coinAge = randomAge(coinMaxAge);
+    for (let i = 1; i <= 2; ++i) {
+      if (sockets[i] !== null) {
+        sockets[i].emit("game stat", JSON.stringify(packReturn()));
+      }
+    }
   };
 
   const playerTeleported = function (player, teleporterSteppedOn) {

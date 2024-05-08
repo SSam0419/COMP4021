@@ -142,6 +142,10 @@ io.on("connection", (socket) => {
         }
       }
     }
+    if (roomNum === -1 || gameServers[roomNum].isGameEnd()) {
+      console.log("Game ended");
+      return socket.emit("end game");
+    }
 
     gameServers[roomNum].setSocket(username, socket);
     toReturn = { roomNum, player };
