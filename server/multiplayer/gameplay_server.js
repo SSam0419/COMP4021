@@ -8,11 +8,11 @@ const GameServer = function () {
   let transporterCooldown = 5000; // The cooldown for using the transporter
   let transporterTimeStamp = 0;
 
-  const totalGameTime = 180; // Total game time in seconds
+  const totalGameTime = 240; // Total game time in seconds
   const coinMaxAge = 10000; // The maximum age of the coins in milliseconds
   const transporterMaxAge = 150000; // The maximum age of the transporter in milliseconds
   const trapMaxAge = 60000;
-  const maxScore = 10; // Score to win
+  const maxScore = 30; // Score to win
 
   const platformCoordinates = [
     { x: 33, y: 223 },
@@ -52,7 +52,8 @@ const GameServer = function () {
   let coinAge = -1;
   let teleporterAge = { 1: -1, 2: -1 };
   let trapAge = -1;
-
+  let trapTimeout = null;
+  let isTrapped = false;
   let sockets = { 1: null, 2: null };
 
   const setSocket = function (username, socket) {
@@ -202,13 +203,19 @@ const GameServer = function () {
   };
 
   const playerTrapped = function (player) {
+    if(isTrapped) return;
     // log event
     console.log("Player " + player + " trapped");
+    isTrapped = true;
     // reset coord after 3 seconds
     trapAge = 0;
-    setTimeout(() => {
-      trapCoord = platformCoordinates[randomPlatformIdx(3)];
+    if(trapTimeout !== null){
+      clearTimeout(trapTimeout)
+    }
+    trapTimeout = setTimeout(() => {
+      trapCoord = platformCoordinates[Math.floor(Math.random() * platformCoordinates.length)];
       trapAge = randomAge(trapMaxAge);
+      isTrapped = false;
     }, 2000);
   };
 

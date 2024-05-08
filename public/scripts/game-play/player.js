@@ -10,7 +10,10 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   let isAttacking = false;
   let isAttackCooldown = false;
   let isTakingHit = false;
+  let isInteracted = false;
+  let isCheating = false;
   let lastUpdate = 0;
+  let attackTimeout = null;
   
   // This is the sprite sequences of the player facing different directions.
   const sequences = MOVEMENT_SEQUENCES;
@@ -22,6 +25,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   const attackLeftSprite = Sprite(ctx, x, y, true);
   const attackRightSprite = Sprite(ctx, x, y);
   const deathSprite = Sprite(ctx, x, y);
+
   // The sprite object is configured for the player sprite here.
   let playerSprites = {
     movement: sprite
@@ -40,7 +44,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       .setSequence(deathSequences)
       .setScale(0.75)
       .useSheet("./assets/Death.png"),
-  };
+  }
 
   // This is the moving direction, which can be a number from 0 to 4:
   // - `0` - not moving
@@ -74,6 +78,54 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     return inFall;
   };
 
+  const cheatToggle = function(){
+    isCheating = !isCheating;
+    if(isCheating){
+      playerSprites = {
+        movement: sprite
+          .setSequence(sequences.idle)
+          .setScale(0.75)
+          .useSheet("./assets/player_sprite_cheat.png"),
+        attackRight: attackRightSprite
+          .setSequence(attackRightSequences)
+          .setScale(-1, 0.75)
+          .useSheet("./assets/Attack1_cheat.png"),
+        attackLeft: attackLeftSprite
+          .setSequence(attackRightSequences)
+          .setScale(0.75)
+          .useSheet("./assets/Attack1_cheat.png"),
+        death: deathSprite
+          .setSequence(deathSequences)
+          .setScale(0.75)
+          .useSheet("./assets/Death.png"),
+      }
+    }else{
+      playerSprites = {
+        movement: sprite
+          .setSequence(sequences.idle)
+          .setScale(0.75)
+          .useSheet("./assets/player_sprite.png"),
+        attackRight: attackRightSprite
+          .setSequence(attackRightSequences)
+          .setScale(-1, 0.75)
+          .useSheet("./assets/Attack1.png"),
+        attackLeft: attackLeftSprite
+          .setSequence(attackRightSequences)
+          .setScale(0.75)
+          .useSheet("./assets/Attack1.png"),
+        death: deathSprite
+          .setSequence(deathSequences)
+          .setScale(0.75)
+          .useSheet("./assets/Death.png"),
+      }
+    }
+    console.log("Cheat "+isCheating)
+  }
+
+  const getIsCheating = function(){
+    return isCheating
+  }
+
   const setInCollider = function (boolean) {
     inCollider = boolean;
     if (!(getInCollider() || getInJump())) {
@@ -88,6 +140,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   };
 
   const trap = (x, y) => {
+    if(isCheating) return;
+    Sounds.play('trap')
     isTrapped = true;
     playerSprites.movement.setXY(x, y);
   };
@@ -99,7 +153,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   };
 
   const updateSocketPlayerMovement = function (room, slot) {
-    //  {room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
+    //  {room: 1, player: 1 , command: "updatePos", parameters: {x=123,y=456}}
 
     Socket.playerMovement(room, slot, "updatePos", {
       x: playerSprites.movement.getXY().x,
@@ -115,6 +169,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   };
   const move = function (dir) {
     if (isTrapped) return console.log("trapping");
+    isInteracted = true;
     movePlayer(
       dir,
       direction,
@@ -141,6 +196,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   };
 
   const attack = function (orientation) {
+    isInteracted = true;
     if (orientation === "left") {
       return attackLeft();
     } else if (orientation === "right") {
@@ -152,7 +208,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
   const attackLeft = function () {
     if (getIsTakingHit()) return console.log("taking hit");
-    if (getIsAttackCooldown()) return console.log("attack on cooldown");
+    if (getIsAttackCooldown() && !isCheating) return console.log("attack on cooldown");
     if (getIsTrapped()) return;
     if (getInJump() || getInFall())
       return console.log("cant attack while jumping");
@@ -162,6 +218,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     isAttacking = true;
     isAttackCooldown = true;
     attackDirection = "left";
+    Sounds.playDirect('attack')
 
     playerSprites.attackLeft.setSequence(attackRightSequences);
     playerSprites.attackLeft.setXY(
@@ -176,7 +233,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       attackDirection = "";
       playerSprites.movement.setXY(
         playerSprites.attackLeft.getXY().x,
-        playerSprites.attackLeft.getXY().y
+        playerSprites.attackLeft.getXY().y -5
       );
       playerSprites.movement.setSequence(sequences.idle);
       // remove attack sprite
@@ -190,12 +247,13 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
   const attackRight = function () {
     if (getIsTakingHit()) return console.log("taking hit");
-    if (getIsAttackCooldown()) return console.log("attack on cooldown");
+    if (getIsAttackCooldown() && !isCheating) return console.log("attack on cooldown");
     if (getIsTrapped()) return;
     if (getInJump() || getInFall())
       return console.log("cant attack while jumping");
     if (getIsAttacking()) return console.log("cant attack while attacking");
     console.log("attacking right");
+    Sounds.playDirect('attack')
 
     isAttacking = true;
     isAttackCooldown = true;
@@ -214,7 +272,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       attackDirection = "";
       playerSprites.movement.setXY(
         playerSprites.attackRight.getXY().x,
-        playerSprites.attackRight.getXY().y
+        playerSprites.attackRight.getXY().y - 5
       );
       playerSprites.movement.setSequence(sequences.idle);
       // remove attack sprite
@@ -248,15 +306,17 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   };
 
   const takeHit = function () {
+    if (isCheating) return console.log("Invincible when cheating")
     if (getIsTakingHit()) return console.log("already taking hit");
     if (getIsTrapped()) return;
+    Sounds.play('getHit')
     console.log("taking hit!");
     isTakingHit = true;
 
     playerSprites.death.setSequence(deathSequences);
     playerSprites.death.setXY(
       playerSprites.movement.getXY().x,
-      playerSprites.movement.getXY().y - 5
+      playerSprites.movement.getXY().y
     );
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
@@ -276,6 +336,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   const jump = function () {
     if (isTrapped) return console.log("trapping");
     if (!(getInJump() || getInFall())) {
+      Sounds.playDirect('jump',0.35)
       inJump = true;
       jumpingY = playerSprites.movement.getXY().y;
       if (sprite.getOrientation() == "left") {
@@ -298,6 +359,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
   // TRANSPORT FUNCTIONS
   const transport = function (x, y, now) {
+    Sounds.playDirect('teleport',0.2)
     transporting = true;
     transportX = x;
     transportY = y;
@@ -378,6 +440,9 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
       if (getInCollider()) {
         inFall = false;
+        if(isInteracted){
+          Sounds.playDirect('land',0.1)
+        }
         if (sprite.getOrientation() == "left") {
           if (direction != 0) {
             playerSprites.movement.setSequence(sequences.runLeft);
@@ -408,10 +473,6 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   const updateTakeHit = function (time) {
     playerSprites.death.update(time);
   };
-
-  const getAttackDirection = function (){
-    return attackDirection
-  }
 
   const draw = function () {
     if (isAttacking) {
@@ -464,6 +525,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     takeHit,
     getIsTakingHit,
     getPlayerSlot,
-    getAttackDirection
+    getAttackDirection,
+    cheatToggle,
+    getIsCheating
   };
 };

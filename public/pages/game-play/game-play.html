@@ -21,8 +21,8 @@
       <div id="player-1-board" class="player-board">
         <h3 id="player-1">Player 1</h3>
         <h4>
-          <span id="score-1">Score : 10 </span>
-          <span class="text-muted">/10</span>
+          <span id="score-1">Score : 0 </span>
+          <span class="text-muted">/30</span>
         </h4>
         <div>
           Skill :
@@ -35,6 +35,7 @@
           <p class="hit text-success">You have hit the enemy!</p>
           <p class="miss text-danger">You missed!</p>
           <p class="get-hit text-danger">You were hit by the enemy!</p>
+          <p class="cheat text-danger">Fallen to the dark...</p>
         </div>
       </div>
       <div id="game-container">
@@ -83,8 +84,8 @@
       <div id="player-2-board" class="player-board">
         <h3 id="player-2">Player 2</h3>
         <h4>
-          <span id="score-2">Score : 10 </span>
-          <span class="text-muted">/10</span>
+          <span id="score-2">Score : 0 </span>
+          <span class="text-muted">/30</span>
         </h4>
         <div>
           Skill :
@@ -97,6 +98,7 @@
           <p class="hit text-success">You have hit the enemy!</p>
           <p class="miss text-danger">You missed!</p>
           <p class="get-hit text-danger">You were hit by the enemy!</p>
+          <p class="cheat text-danger">Fallen to the dark...</p>
         </div>
       </div>
     </div>
@@ -118,6 +120,7 @@
     <script src="scripts/game-play/player/socket_movement_handler.js"></script>
     <!-- IMPORT GAME PLAY RELATED -->
     <script src="scripts/game-play/player.js"></script>
+    <script src="scripts/game-play/sound.js"></script>
     <script src="scripts/game-play/coin.js"></script>
     <script src="scripts/game-play/platform.js"></script>
     <script src="scripts/game-play/floor.js"></script>
@@ -131,12 +134,13 @@
 
     <script src="pages/game-play/util/notification.js"></script>
     <script>
-      $(function () {
+      $(async function () {
         let roomNum = null;
         let playerSlot = null;
-        const maxScore = 10;
-        const totalGameTime = 180; // Total game time in seconds
+        const maxScore = 30;
+        const totalGameTime = 240; // Total game time in seconds
         let initComplete = false;
+        let hasInteracted = false;
         Authentication.validate(
           () => {
             console.log("User is signed in.");
@@ -169,7 +173,7 @@
 
         /* Create the sprites in the game */
 
-        const floor = Floor(context, 0, 615);
+        const floor = Floor(context, 0, 611);
 
         const coordinates = [
           { x: 74, y:532},
@@ -267,6 +271,12 @@
               player1.setXY(playerCoord[1].x, playerCoord[1].y);
               player2.setXY(playerCoord[2].x, playerCoord[2].y);
 
+              const timeRemaining = totalGameTime - gameStartTime
+              $("#time-remaining").text(timeRemaining)
+              if(timeRemaining < 60){
+                $("#counter text").css("stroke","red")
+              }
+
               const { score1, score2 } = score;
               $("#score-1").text("Score: " + score1);
               $("#score-2").text("Score: " + score2);
@@ -277,7 +287,6 @@
                 console.log("End game")
                 endGame()
                 $('#leave-button').on('click', function(){
-                  console.log(Socket.exitGameplay(roomNum, playerSlot))
                   window.location.href = "/game-rooms";
                 })
                 return
@@ -308,6 +317,14 @@
             $skill.text(cooldownTxt);
             $skill.toggleClass("text-danger", isCooldown);
             $skill.toggleClass("text-success", !isCooldown);
+
+            if(hasInteracted){
+              if(player1.getIsCheating() || player2.getIsCheating()){
+                Sounds.playBGM("bgmCheat",0.5)
+              }else{
+                Sounds.playBGM("bgm",0.5)
+              }
+            }
 
             handleGameEvents(
               player1,
@@ -354,154 +371,21 @@
           requestAnimationFrame(doFrame);
         }
 
-
-        function playerGravity(player, opponentPlayer, now) {
-          //handle player right attack
-          if (player.getIsAttacking()) {
-            if (player.getAttackDirection() == "right") {
-              if (
-                Math.abs(
-                  player.getAttackPosition().y - opponentPlayer.getXY().y
-                ) < 15 &&
-                // opponent is on the right within 50px
-                opponentPlayer.getXY().x - player.getAttackPosition().x < 50 &&
-                player.getAttackPosition().x - opponentPlayer.getXY().x < 0
-              ) {
-                opponentPlayer.takeHit();
-                Notification(player.getPlayerSlot(), "hit");
-                Notification(player.getPlayerSlot() == 1 ? 2 : 1, "get hit");
-              }
-            } else {
-              console.log(player.getAttackDirection())
-              console.log(opponentPlayer.getXY().x - player.getAttackPosition().x < 0)
-              if (
-                Math.abs(
-                  player.getAttackPosition().y - opponentPlayer.getXY().y
-                ) < 15 &&
-                // opponent is on the left within 50px
-                player.getAttackPosition().x - opponentPlayer.getXY().x > -50 &&
-                opponentPlayer.getXY().x - player.getAttackPosition().x < 0
-              ) {
-                opponentPlayer.takeHit();
-                Notification(player.getPlayerSlot(), "hit");
-                Notification(player.getPlayerSlot() == 1 ? 2 : 1, "get hit");
-              }
-            }
-          }
-
-          //handle coin
-          if (
-            coin.getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y)
-          ) {
-            Notification(player.getPlayerSlot(), "coin");
-            const { roomNum, playerSlot } = GameroomConfig.getConfig();
-            console.log("Coin Coord="+coin.getXY().x+coin.getXY().y)
-            coin.setXY(-100, -100);
-            Socket.playerCollectedCoin(roomNum, playerSlot);
-          }
-
-          //handle trap
-          if (
-            player
-              .getBoundingBox()
-              .isPointInBox(trap.getXY().x, trap.getXY().y - 15) &&
-            !player.getInFall() &&
-            !player.getInJump()
-          ) {
-            Notification(player.getPlayerSlot(), "trap");
-            let boardId =
-              player.getPlayerSlot() === 1
-                ? "player-1-board"
-                : "player-2-board";
-
-            player.stop(1);
-            player.trap(trap.getXY().x, trap.getXY().y - 25);
-            // now reset trap position
-            Socket.playerTrapped(roomNum, playerSlot);
-            return;
-          } else {
-            // there is no trap near player
-            let boardId =
-              player.getPlayerSlot() === 1
-                ? "player-1-board"
-                : "player-2-board";
-
-            player.setIsTrapped(false);
-          }
-
-          //handle transporter
-          if (
-            !player.getInFall() &&
-            !player.getInJump() &&
-            !player.getIsTrapped()
-          ) {
-            for (let i = 1; i <= 2; i++) {
-              if (
-                player
-                  .getBoundingBox()
-                  .isPointInBox(
-                    transporters[i].getXY().x,
-                    transporters[i].getXY().y - 30
-                  )
-              ) {
-                if (now - transporterTimeStamp < transporterCooldown) {
-                  Notification(player.getPlayerSlot(), "teleporter cooldown");
-                } else {
-                  console.log("Player is teleported");
-                  transporterTimeStamp = now;
-                  const transporter = transporters[i == 1 ? 2 : 1];
-                  player.transport(
-                    transporter.getXY().x,
-                    transporter.getXY().y - 30,
-                    now
-                  );
-                }
-
-                // const { roomNum, playerSlot } = GameroomConfig.getConfig();
-                // Socket.playerTeleported(roomNum, playerSlot, i);
-              }
-            }
-          }
-
-          //others
-          for (let i = 0; i < colliders.length - 1; i++) {
-            if (
-              platforms[i]
-                .getBoundingBox()
-                .isPointInBox(player.getXY().x, player.getXY().y + 25)
-            ) {
-              colliders[i] = true;
-            } else {
-              colliders[i] = false;
-            }
-          }
-
-          if (
-            floor
-              .getBoundingBox()
-              .isPointInBox(player.getXY().x, player.getXY().y + 25)
-          ) {
-            colliders[colliders.length - 1] = true;
-          } else {
-            colliders[colliders.length - 1] = false;
-          }
-
-          if (player.getInFall() || !player.getInJump()) {
-            if (colliders.some((value) => value === true)) {
-              player.setInCollider(true);
-            } else {
-              player.setInCollider(false);
-            }
-          }
-        }
-
         const endGame = function(){
+          Sounds.stopBGM()
           displayTxt = myScore > opponentScore? 'You Win!': 'You Lose...'
+          displayTxt = myScore === opponentScore? 'Draw': displayTxt
+          if(myScore > opponentScore){
+            Sounds.play('win')
+          }else{
+            Sounds.play('lose')
+          }
           $('#game-over').show()
           $('#game-over-text').text(displayTxt)
         }
 
         $(document).on("keydown", function (event) {
+          hasInteracted = true;
           handleKeydown(
             event,
             playerInstance,

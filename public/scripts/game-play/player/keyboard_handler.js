@@ -49,5 +49,9 @@ function handleKeyup(event, roomNum, playerSlot, playerInstance) {
       playerInstance.stop(2);
       Socket.playerKeys(roomNum, playerSlot, 39, "keyup");
       break;
+    case 67: // C for Cheating
+      Socket.playerKeys(roomNum, playerSlot, 67, "cheat")
+      //playerInstance.cheatToggle();
+      break;
   }
 }

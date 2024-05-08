@@ -138,12 +138,8 @@ const Socket = (function () {
   };
   const playerAttack = function (room, player, direction) {
     message = { room, player, direction};
-    socket.emit("player attack right", JSON.stringify(message));
+    socket.emit("player attack", JSON.stringify(message));
   };
-  const exitGameplay = function (room, player) {
-    message = { room, player }
-    socket.emit("leave gameplay", JSON.stringify(message))
-  }
 
   return {
     getSocket,
@@ -159,7 +155,6 @@ const Socket = (function () {
     playerCollectedCoin,
     playerTeleported,
     playerTrapped,
-    playerAttack,
-    exitGameplay
+    playerAttack
   };
 })();

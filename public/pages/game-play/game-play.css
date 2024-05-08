@@ -122,3 +122,10 @@ canvas {
   text-anchor: middle;
   cursor: pointer;
 }
+
+.cheat{
+  font-size: 150%;
+  font-weight: bold; /* This will make the text bold */
+  background-color: #000000; /* This will change the background color */
+
+}

@@ -153,7 +153,7 @@ io.on("connection", (socket) => {
   });
 
   // Given the gameroom, player and command, do the command in the gameroom
-  // expected message: {room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
+  // expected message: {room: 1, player: 1 , command: "updatePos", parameters: {x=123,y=456}}
   socket.on("game command", (message) => {
     const { room, player, command, parameters } = JSON.parse(message);
     if (gameRooms[room]["player1"] && gameRooms[room]["player2"]) {
@@ -200,11 +200,11 @@ io.on("connection", (socket) => {
     console.log(`player ${player} is trapped`);
     gameServers[room].playerTrapped(player);
   });
-  socket.on("leave gameplay", (message)=>{
-    const {room, player} = JSON.parse(message)
-    gameRooms[room][`player${player}`] = null
-    gameServers[room].deattachSocket(player)
-  })
+  socket.on("player cheat", (message) => {
+    const { room, player } = JSON.parse(message);
+    console.log(`player ${player} toggle cheat`);
+    gameServers[room].playerCheat(player);
+  });
 });
 
 // Use a web server to listen at port 8000

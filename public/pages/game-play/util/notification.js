@@ -36,6 +36,9 @@ const Notification = function (playerSlot, type) {
         $(`#player-${playerSlot}-board .get-hit`).hide();
       }, 3000);
       break;
+    case "cheat":
+      $(`#player-${playerSlot}-board .cheat`).show();
+      break;
     default:
       break;
   }
