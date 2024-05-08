@@ -111,6 +111,7 @@
 
     <!-- IMPORT GAME PLAY RELATED -->
     <script src="scripts/game-play/player/player_events.js"></script>
+    <script src="scripts/game-play/player/keyboard_handler.js"></script>
     <script src="scripts/game-play/player.js"></script>
     <script src="scripts/game-play/coin.js"></script>
     <script src="scripts/game-play/platform.js"></script>
@@ -331,48 +332,18 @@
         }
 
         $(document).on("keydown", function (event) {
-          if (!initComplete) {
-            return;
-          }
-          if (playerInstance.getIsAttacking()) {
-            return console.log("attacking");
-          }
-          if (playerInstance.getIsTakingHit()) {
-            return Notification(playerInstance.getPlayerSlot(), "get hit");
-          }
-          if (playerInstance.getIsTrapped()) {
-            return Notification(playerInstance.getPlayerSlot(), "trap");
-          }
-          if (event.keyCode == 37) {
-            playerInstance.move(1);
-            Socket.playerKeys(roomNum, playerSlot, 37, "keydown");
-          } else if (event.keyCode == 39) {
-            playerInstance.move(2);
-            Socket.playerKeys(roomNum, playerSlot, 39, "keydown");
-          } else if (event.keyCode == 38) {
-            playerInstance.jump();
-            playerInstance.setInCollider(false);
-            Socket.playerKeys(roomNum, playerSlot, 38, "keydown");
-          } else if (event.keyCode == 65) {
-            playerInstance.stop(1);
-            Socket.playerAttack(roomNum, playerSlot, "left");
-            playerInstance.attack("left");
-          } else if (event.keyCode == 68) {
-            playerInstance.stop(2);
-            Socket.playerAttack(roomNum, playerSlot, "right");
-            playerInstance.attack("right");
-          }
+          handleKeydown(
+            event,
+            playerInstance,
+            roomNum,
+            playerSlot,
+            initComplete
+          );
         });
 
         /* Handle the keyup of arrow keys and spacebar */
         $(document).on("keyup", function (event) {
-          if (event.keyCode == 37) {
-            playerInstance.stop(1);
-            Socket.playerKeys(roomNum, playerSlot, 37, "keyup");
-          } else if (event.keyCode == 39) {
-            playerInstance.stop(2);
-            Socket.playerKeys(roomNum, playerSlot, 39, "keyup");
-          }
+          handleKeyup(event, roomNum, playerSlot, playerInstance);
         });
 
         const playerEventSocket = io();
