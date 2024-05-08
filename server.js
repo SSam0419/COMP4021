@@ -130,7 +130,6 @@ io.on("connection", (socket) => {
   // Given the username, return the gameroom and player
   // expected message: {username: "username"}
   socket.on("get game config", (message) => {
-    console.log("get game config socket triggered");
     const username = socket.request.session.user.username;
     let roomNum,
       player = -1;
@@ -141,10 +140,6 @@ io.on("connection", (socket) => {
           player = j;
         }
       }
-    }
-    if (roomNum === -1 || gameServers[roomNum].isGameEnd()) {
-      console.log("Game ended");
-      return socket.emit("end game");
     }
 
     gameServers[roomNum].setSocket(username, socket);

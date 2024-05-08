@@ -11,7 +11,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   let isAttackCooldown = false;
   let isTakingHit = false;
   let lastUpdate = 0;
-  
+
   // This is the sprite sequences of the player facing different directions.
   const sequences = MOVEMENT_SEQUENCES;
 
@@ -51,7 +51,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   let attackDirection = "";
 
   // This is the moving speed (pixels per second) of the player
-  let speed = 150;
+  let speed = 180;
 
   // JUMP VARIABLES
   let inJump = false;
@@ -79,9 +79,6 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     if (!(getInCollider() || getInJump())) {
       fall();
     }
-  };
-  const getAttackDirection = () => {
-    return attackDirection;
   };
   const getInCollider = function () {
     return inCollider;
@@ -316,9 +313,9 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   // This function updates the player depending on his movement.
   // - `time` - The timestamp when this function is called
   const update = function (time) {
-    const now = Date.now()
-    if(lastUpdate===0) lastUpdate = now;
-    const ratio = 1/ (now - lastUpdate);
+    const now = Date.now();
+    if (lastUpdate === 0) lastUpdate = now;
+    const ratio = 1 / (now - lastUpdate);
     lastUpdate = now;
 
     /* Update the player if the player is moving */
@@ -334,17 +331,17 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       /* Move the player */
       switch (direction) {
         case 1:
-          x -= speed*ratio/10;
+          x -= (speed * ratio) / 10;
           break;
         case 2:
-          x += speed*ratio/10;
+          x += (speed * ratio) / 10;
           break;
       }
     }
 
     if (getInJump()) {
       inCollider = false;
-      y -= 20*ratio;
+      y -= 20 * ratio;
       if (direction != 0) {
         /* Change sprite mid-air */
         switch (direction) {
@@ -362,7 +359,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }
 
     if (getInFall()) {
-      y += 23*ratio;
+      y += 23 * ratio;
 
       if (direction != 0) {
         /* Change sprite mid-air */
@@ -409,9 +406,9 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     playerSprites.death.update(time);
   };
 
-  const getAttackDirection = function (){
-    return attackDirection
-  }
+  const getAttackDirection = function () {
+    return attackDirection;
+  };
 
   const draw = function () {
     if (isAttacking) {
@@ -464,6 +461,6 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     takeHit,
     getIsTakingHit,
     getPlayerSlot,
-    getAttackDirection
+    getAttackDirection,
   };
 };
