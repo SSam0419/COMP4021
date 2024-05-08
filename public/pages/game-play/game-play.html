@@ -105,6 +105,18 @@
     <script src="scripts/game-play/bounding_box.js"></script>
     <script src="scripts/game-play/sprite.js"></script>
     <script src="scripts/authentication.js"></script>
+
+    <!-- IMPORT CONSTANT -->
+    <script src="scripts/game-play/constants/movement_sequences.js"></script>
+    <script src="scripts/game-play/constants/attack_right_sequences.js"></script>
+    <script src="scripts/game-play/constants/death_sequences.js"></script>
+
+    <!-- helpers -->
+    <script src="scripts/game-play/player/player_movements.js"></script>
+    <script src="scripts/game-play/player/player_events.js"></script>
+    <script src="scripts/game-play/player/keyboard_handler.js"></script>
+    <script src="scripts/game-play/player/socket_movement_handler.js"></script>
+    <!-- IMPORT GAME PLAY RELATED -->
     <script src="scripts/game-play/player.js"></script>
     <script src="scripts/game-play/coin.js"></script>
     <script src="scripts/game-play/platform.js"></script>
@@ -147,6 +159,9 @@
         let collectedcoins = 0; // The number of coins collected in the game
         let transporterCooldown = 3500; // The cooldown for using the transporter
         let transporterTimeStamp = 0;
+        const setTransporterTimeStamp = (time) => {
+          transporterTimeStamp = time;
+        };
 
         /* Create the game area */
         const gameArea = BoundingBox(context, -100, 0, 615, 864);
@@ -209,36 +224,23 @@
             if (roomNum && playerSlot) {
               initComplete = true;
               $("#overlay").hide();
-              playerInstance = player1;
-              if (playerSlot === 2) {
-                playerInstance = player2;
-              }
 
-              if (playerSlot === 1) {
-                $("#player-1-board").css(
-                  "background-color",
-                  "rgba(0, 0, 255, 0.8)"
-                ); //my board
-                $("h3#player-1").text("Me");
+              // Set player instance based on playerSlot
+              playerInstance = playerSlot === 2 ? player2 : player1;
 
-                $("#player-2-board").css(
-                  "background-color",
-                  "rgba(106, 0, 30, 1)"
-                ); //enemy board
-                $("h3#player-2").text("Enemy");
-              } else {
-                $("#player-1-board").css(
-                  "background-color",
-                  "rgba(106, 0, 30, 1)"
-                ); //enemy board
-                $("h3#player-1").text("Enemy");
+              // Set board colors and player names based on playerSlot
+              const isPlayer1 = playerSlot === 1;
+              $("#player-1-board").css(
+                "background-color",
+                isPlayer1 ? "rgba(0, 0, 255, 0.8)" : "rgba(106, 0, 30, 1)"
+              );
+              $("h3#player-1").text(isPlayer1 ? "Me" : "Enemy");
 
-                $("#player-2-board").css(
-                  "background-color",
-                  "rgba(0, 0, 255, 0.8)"
-                ); //my board
-                $("h3#player-2").text("Me");
-              }
+              $("#player-2-board").css(
+                "background-color",
+                isPlayer1 ? "rgba(106, 0, 30, 1)" : "rgba(0, 0, 255, 0.8)"
+              );
+              $("h3#player-2").text(isPlayer1 ? "Enemy" : "Me");
             }
           }
 
@@ -307,8 +309,34 @@
             $skill.toggleClass("text-danger", isCooldown);
             $skill.toggleClass("text-success", !isCooldown);
 
-            playerGravity(player1, player2, now);
-            playerGravity(player2, player1, now);
+            handleGameEvents(
+              player1,
+              player2,
+              coin,
+              trap,
+              transporters,
+              platforms,
+              floor,
+              colliders,
+              now,
+              transporterTimeStamp,
+              transporterCooldown,
+              setTransporterTimeStamp
+            );
+            handleGameEvents(
+              player2,
+              player1,
+              coin,
+              trap,
+              transporters,
+              platforms,
+              floor,
+              colliders,
+              now,
+              transporterTimeStamp,
+              transporterCooldown,
+              setTransporterTimeStamp
+            );
 
             /* Clear the screen */
             context.clearRect(0, 0, cv.width, cv.height);
@@ -325,6 +353,7 @@
 
           requestAnimationFrame(doFrame);
         }
+
 
         function playerGravity(player, opponentPlayer, now) {
           //handle player right attack
@@ -473,100 +502,24 @@
         }
 
         $(document).on("keydown", function (event) {
-          if (!initComplete) {
-            return;
-          }
-          if (playerInstance.getIsAttacking()) {
-            return console.log("attacking");
-          }
-          if (playerInstance.getIsTakingHit()) {
-            return Notification(playerInstance.getPlayerSlot(), "get hit");
-          }
-          if (playerInstance.getIsTrapped()) {
-            return Notification(playerInstance.getPlayerSlot(), "trap");
-          }
-          if (event.keyCode == 37) {
-            playerInstance.move(1);
-            Socket.playerKeys(roomNum, playerSlot, 37, "keydown");
-          } else if (event.keyCode == 39) {
-            playerInstance.move(2);
-            Socket.playerKeys(roomNum, playerSlot, 39, "keydown");
-          } else if (event.keyCode == 38) {
-            playerInstance.jump();
-            playerInstance.setInCollider(false);
-            Socket.playerKeys(roomNum, playerSlot, 38, "keydown");
-          } else if (event.keyCode == 65) {
-            playerInstance.stop(1);
-            Socket.playerAttack(roomNum, playerSlot, "left");
-            playerInstance.attack("left");
-          } else if (event.keyCode == 68) {
-            playerInstance.stop(2);
-            Socket.playerAttack(roomNum, playerSlot, "right");
-            playerInstance.attack("right");
-          }
+          handleKeydown(
+            event,
+            playerInstance,
+            roomNum,
+            playerSlot,
+            initComplete
+          );
         });
 
         /* Handle the keyup of arrow keys and spacebar */
         $(document).on("keyup", function (event) {
-          if (event.keyCode == 37) {
-            playerInstance.stop(1);
-            Socket.playerKeys(roomNum, playerSlot, 37, "keyup");
-          } else if (event.keyCode == 39) {
-            playerInstance.stop(2);
-            Socket.playerKeys(roomNum, playerSlot, 39, "keyup");
-          }
+          handleKeyup(event, roomNum, playerSlot, playerInstance);
         });
 
         const playerEventSocket = io();
         if (playerEventSocket) {
           playerEventSocket.on("game keys event", (message) => {
-            const { room, player, keyCode, event } = JSON.parse(message);
-
-            const handlePlayerMovement = (playerInstance) => {
-              switch (event) {
-                case "keydown":
-                  switch (keyCode) {
-                    case 37:
-                      playerInstance.move(1);
-                      break;
-                    case 39:
-                      playerInstance.move(2);
-                      break;
-                    case 38:
-                      playerInstance.jump();
-                      playerInstance.setInCollider(false);
-                      break;
-                  }
-                  break;
-                case "keyup":
-                  switch (keyCode) {
-                    case 37:
-                      playerInstance.stop(1);
-                      break;
-                    case 39:
-                      playerInstance.stop(2);
-                      break;
-                  }
-                  break;
-                case "attackRight":
-                  playerInstance.stop(2);
-                  playerInstance.attack("right");
-                  break;
-                case "attackLeft":
-                  playerInstance.stop(1);
-                  playerInstance.attack("left");
-                  break;
-              }
-            };
-
-            switch (player) {
-              case 1:
-                handlePlayerMovement(player1);
-                break;
-              case 2:
-                handlePlayerMovement(player2);
-                break;
-            }
+            handlePlayerMovementSocket(player1, player2, message);
           });
         }
         $(document).on("click", function (event) {

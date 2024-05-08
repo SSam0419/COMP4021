@@ -4,113 +4,19 @@
 // - `y` - The initial y position of the player
 
 // - `gameArea` - The bounding box of the game area
+
 const Player = function (ctx, x, y, gameArea, playerSlot) {
   let isTrapped = false;
   let isAttacking = false;
   let isAttackCooldown = false;
   let isTakingHit = false;
   let lastUpdate = 0;
+  
   // This is the sprite sequences of the player facing different directions.
-  const sequences = {
-    idle: {
-      x: 640,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 8,
-      timing: 100,
-      loop: true,
-      orientation: "right",
-    },
-    idleLeft: {
-      x: 1920,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 8,
-      timing: 100,
-      loop: true,
-      orientation: "left",
-    },
-    run: {
-      x: 3840,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 8,
-      timing: 100,
-      loop: true,
-      orientation: "right",
-    },
-    runLeft: {
-      x: 5120,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 8,
-      timing: 100,
-      loop: true,
-      orientation: "left",
-    },
-    jump: {
-      x: 3200,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 2,
-      timing: 100,
-      loop: true,
-      orientation: "right",
-    },
-    jumpLeft: {
-      x: 3520,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 2,
-      timing: 100,
-      loop: true,
-      orientation: "left",
-    },
-    fall: {
-      x: 0,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 2,
-      timing: 100,
-      loop: true,
-      orientation: "right",
-    },
-    fallLeft: {
-      x: 320,
-      y: 48,
-      width: 160,
-      height: 63,
-      count: 2,
-      timing: 100,
-      loop: true,
-      orientation: "left",
-    },
-  };
-  const attackRightSequences = {
-    x: 0,
-    y: 48,
-    width: 160,
-    height: 63,
-    count: 4,
-    timing: 100,
-    loop: false,
-  };
-  const deathSequences = {
-    x: 0,
-    y: 48,
-    width: 160,
-    height: 63,
-    count: 6,
-    timing: 100,
-    loop: false,
-  };
+  const sequences = MOVEMENT_SEQUENCES;
+
+  const attackRightSequences = ATTACK_RIGHT_SEQUENCES;
+  const deathSequences = DEATH_SEQUENCES;
   // This is the sprite object of the player created from the Sprite module.
   const sprite = Sprite(ctx, x, y);
   const attackLeftSprite = Sprite(ctx, x, y, true);
@@ -174,7 +80,9 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       fall();
     }
   };
-
+  const getAttackDirection = () => {
+    return attackDirection;
+  };
   const getInCollider = function () {
     return inCollider;
   };
@@ -202,39 +110,34 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
   // This function sets the player's moving direction.
   // - `dir` - the moving direction (1: Left, 2: Right, 3: Up)
+  const setDirection = function (dir) {
+    direction = dir;
+  };
   const move = function (dir) {
     if (isTrapped) return console.log("trapping");
-    if (dir >= 1 && dir <= 4 && dir != direction) {
-      if (!(getInJump() || getInFall())) {
-        switch (dir) {
-          case 1:
-            playerSprites.movement.setSequence(sequences.runLeft);
-            break;
-          case 2:
-            playerSprites.movement.setSequence(sequences.run);
-            break;
-        }
-      }
-      direction = dir;
-    }
+    movePlayer(
+      dir,
+      direction,
+      getInJump,
+      getInFall,
+      playerSprites,
+      sequences,
+      setDirection
+    );
   };
 
   // This function stops the player from moving.
   // - `dir` - the moving direction when the player is stopped (1: Left, 2: Right, 3: Up)
   const stop = function (dir) {
-    if (direction == dir) {
-      if (!(getInJump() || getInFall())) {
-        switch (dir) {
-          case 1:
-            playerSprites.movement.setSequence(sequences.idleLeft);
-            break;
-          case 2:
-            playerSprites.movement.setSequence(sequences.idle);
-            break;
-        }
-      }
-      direction = 0;
-    }
+    stopPlayer(
+      dir,
+      direction,
+      getInJump,
+      getInFall,
+      playerSprites,
+      sequences,
+      setDirection
+    );
   };
 
   const attack = function (orientation) {
