@@ -182,6 +182,10 @@ const Socket = (function () {
     message = { room, player };
     socket.emit("quit game", JSON.stringify(message));
   };
+  const hitOpponent = function (room, player, opponent) {
+    message = { room, player, opponent }
+    socket.emit("player hit", JSON.stringify(message));
+  }
 
   return {
     getSocket,
@@ -199,5 +203,6 @@ const Socket = (function () {
     playerTrapped,
     playerAttack,
     quitGame,
+    hitOpponent
   };
 })();

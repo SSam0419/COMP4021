@@ -380,7 +380,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   const update = function (time) {
     const now = Date.now()
     if(lastUpdate===0) lastUpdate = now;
-    const ratio = 1/ (now - lastUpdate);
+    const ratio = (now - lastUpdate);
     lastUpdate = now;
 
     /* Update the player if the player is moving */
@@ -396,17 +396,17 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       /* Move the player */
       switch (direction) {
         case 1:
-          x -= speed*ratio/10;
+          x -= ratio/(speed)*30;
           break;
         case 2:
-          x += speed*ratio/10;
+          x += ratio/(speed)*30;
           break;
       }
     }
 
     if (getInJump()) {
       inCollider = false;
-      y -= 20*ratio;
+      y -= ratio/3.5;
       if (direction != 0) {
         /* Change sprite mid-air */
         switch (direction) {
@@ -424,7 +424,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }
 
     if (getInFall()) {
-      y += 23*ratio;
+      y += ratio/3;
 
       if (direction != 0) {
         /* Change sprite mid-air */

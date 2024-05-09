@@ -121,10 +121,10 @@ io.on("connection", (socket) => {
       const user2 = gameRooms[room]["player2"];
       const socket1 = sockets[user1];
       const socket2 = sockets[user2];
-      gameServers[room].initialize(user1, user2);
-      socket1.emit("start game");
-      socket2.emit("start game");
-    }
+        gameServers[room].initialize(user1, user2);
+        socket1.emit("start game");
+        socket2.emit("start game");
+      }
   });
 
   // Given the username, return the gameroom and player
@@ -207,6 +207,11 @@ io.on("connection", (socket) => {
     const { room, player } = JSON.parse(message);
     console.log(`player ${player} toggle cheat`);
     gameServers[room].playerCheat(player);
+  });
+  socket.on("player hit", (message) => {
+    const { room, player, opponent } = JSON.parse(message);
+    console.log(`player ${player} Hit Opponent`);
+    gameServers[room].playerHitOpponent(player, opponent);
   });
 });
 

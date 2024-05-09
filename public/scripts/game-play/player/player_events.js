@@ -28,13 +28,17 @@ function handleGameEvents(
         opponentPlayer.getXY().x - player.getAttackPosition().x < 60 &&
         player.getAttackPosition().x - opponentPlayer.getXY().x < 0
       ) {
+        if(!opponentPlayer.getIsCheating()){
+          console.log("Running Socket hit opponent")
+          Socket.hitOpponent(roomNum, player.getPlayerSlot(), opponentPlayer.getPlayerSlot())
+        }
         opponentPlayer.takeHit();
         Notification(player.getPlayerSlot(), "hit");
         Notification(player.getPlayerSlot() == 1 ? 2 : 1, "get hit");
       }
     } else {
-      console.log(player.getAttackDirection());
-      console.log(player.getAttackPosition().x - opponentPlayer.getXY().x);
+      // console.log(player.getAttackDirection());
+      // console.log(player.getAttackPosition().x - opponentPlayer.getXY().x);
       if (
         Math.abs(player.getAttackPosition().y - opponentPlayer.getXY().y) <
           15 &&
@@ -42,6 +46,11 @@ function handleGameEvents(
         player.getAttackPosition().x - opponentPlayer.getXY().x < 60 &&
         opponentPlayer.getXY().x - player.getAttackPosition().x > -60
       ) {
+        if(!opponentPlayer.getIsCheating()){
+          console.log("Running Socket hit opponent")
+          console.log(opponentPlayer.getPlayerSlot())
+          Socket.hitOpponent(roomNum, player.getPlayerSlot(), opponentPlayer.getPlayerSlot())
+        }
         opponentPlayer.takeHit();
         Notification(player.getPlayerSlot(), "hit");
         Notification(player.getPlayerSlot() == 1 ? 2 : 1, "get hit");
@@ -53,7 +62,7 @@ function handleGameEvents(
   if (coin.getBoundingBox().isPointInBox(player.getXY().x, player.getXY().y)) {
     Sounds.playDirect("coin", 0.8);
     Notification(player.getPlayerSlot(), "coin");
-    coin.setXY(-100, -100);
+    coin.setXY(-150, -150);
     //only emit when my player collect the coin
     if (player.getPlayerSlot() === playerSlot) {
       Socket.playerCollectedCoin(roomNum, playerSlot);

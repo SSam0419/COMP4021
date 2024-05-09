@@ -268,8 +268,24 @@ const GameServer = function () {
     }, 2000);
   };
 
+  // Coin Taking from opponent (Neagtive possible)
+  const playerHitOpponent = function (player, opponentPlayer){
+    playerStatus = {
+      1: { username: "", score: 0 },
+      2: { username: "", score: 0 },
+    };
+    console.log(`${player} Hit Opponent ${opponentPlayer}`)
+    playerStatus[player].score += 5;
+    playerStatus[opponentPlayer].score -= 5;
+    for (let i = 1; i <= 2; ++i) {
+      if (sockets[i] !== null) {
+        sockets[i].emit("game stat", JSON.stringify(packReturn()));
+      }
+    }
+  }
+
   const quitGame = function (player) {
-    sockets[player] = null;
+    // sockets[player] = null;
     if (sockets[1] == null && sockets[2] == null) {
       reset();
     }
@@ -287,6 +303,7 @@ const GameServer = function () {
     quitGame,
     deattachSocket,
     getIsGameEnd,
+    playerHitOpponent
   };
 };
 
