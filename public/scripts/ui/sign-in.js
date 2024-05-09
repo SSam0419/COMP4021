@@ -18,11 +18,12 @@ const SignInForm = (function () {
           $("#hint").removeClass("text-danger");
           $("#hint").addClass("text-success");
           console.log("Sign in successful");
-          Socket.connect();
-          // Redirect to the chat page after 2 secs
+
+          // Redirect to the chat page after 0.5 secs
           setTimeout(() => {
             window.location.href = "/game-rooms";
-          }, 2000);
+            Socket.connect();
+          }, 500);
         },
         (error) => {
           $("#hint").text(error);

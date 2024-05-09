@@ -17,28 +17,24 @@ const Socket = (function () {
     socket.on("online players", (message) => {
       if (!GameRooms) return;
       const onlinePlayers = JSON.parse(message);
-      console.log(onlinePlayers);
       GameRooms.updateOnlinePlayers(onlinePlayers);
     });
 
     socket.on("game rooms", (message) => {
       if (!GameRooms) return;
       const gameRooms = JSON.parse(message);
-      console.log(gameRooms);
       GameRooms.updateGameRooms(gameRooms);
     });
 
     socket.on("room joint", (message) => {
       if (!GameRooms) return;
       const gameRooms = JSON.parse(message);
-      console.log(gameRooms);
       GameRooms.updateGameRooms(gameRooms);
     });
 
     socket.on("game config", (message) => {
       if (!GameroomConfig) return;
       const { roomNum, player } = JSON.parse(message);
-      console.log("Room Number: " + roomNum);
       GameroomConfig.setConfig(roomNum, player);
     });
 

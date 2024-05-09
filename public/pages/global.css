@@ -43,6 +43,15 @@ body {
   color: #fff;
   background-color: #555;
 }
+.success-button {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #fff;
+  background-color: #48bb78;
+}
 
 .text-success {
   color: #48bb78;
