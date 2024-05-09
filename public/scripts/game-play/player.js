@@ -156,10 +156,13 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
   const updateSocketPlayerMovement = function (room, slot) {
     //  {room: 1, player: 1 , command: "updatePos", parameters: {x=123,y=456}}
+    if (savedCoord.x === 0 && savedCoord.y === 0 && playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100){
+      savedCoord = { x: playerSprites.movement.getXY().x, y: playerSprites.movement.getXY().y }
+    }
 
     Socket.playerMovement(room, slot, "updatePos", {
-      x: playerSprites.movement.getXY().x,
-      y: playerSprites.movement.getXY().y,
+      x: savedCoord.x,
+      y: savedCoord.y,
     });
     // console.log("Player Movement Updated",playerSprites.movement.getXY());
   };
@@ -181,6 +184,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       sequences,
       setDirection
     );
+    if (playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100 )
+    savedCoord = { x: playerSprites.movement.getXY().x, y: playerSprites.movement.getXY().y }
   };
 
   // This function stops the player from moving.
@@ -222,7 +227,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     attackDirection = "left";
     Sounds.playDirect('attack')
 
-    if(playerSprites.movement.getXY().x != -100 && playerSprites.movement.getXY().y != -100)
+    if(playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100)
     savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
 
     playerSprites.attackLeft.setSequence(attackRightSequences);
@@ -268,7 +273,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     isAttackCooldown = true;
     attackDirection = "right";
 
-    if(playerSprites.movement.getXY().x != -100 && playerSprites.movement.getXY().y != -100)
+    if(playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100)
     savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
 
     playerSprites.attackRight.setSequence(attackRightSequences);
@@ -329,7 +334,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     console.log("taking hit!");
     isTakingHit = true;
 
-    if(playerSprites.movement.getXY().x != -100 && playerSprites.movement.getXY().y != -100)
+    if(playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100)
     savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
 
     playerSprites.death.setSequence(deathSequences);
@@ -369,6 +374,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
         playerSprites.movement.setSequence(sequences.jump);
       }
     }
+    if(playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100)
+    savedCoord = { x: playerSprites.movement.getXY().x, y: playerSprites.movement.getXY().y }
   };
 
   const fall = function () {
@@ -379,6 +386,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     } else {
       playerSprites.movement.setSequence(sequences.fall);
     }
+    if(playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100)
+    savedCoord = { x: playerSprites.movement.getXY().x, y: playerSprites.movement.getXY().y }
   };
 
   // TRANSPORT FUNCTIONS
