@@ -63,8 +63,7 @@ io.on("connection", (socket) => {
     io.emit("online players", JSON.stringify(onlinePlayerList));
   }
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
+  socket.on("sign out", () => {
     if (socket.request.session.user) {
       const user = socket.request.session.user;
       const { username } = user;
@@ -83,6 +82,10 @@ io.on("connection", (socket) => {
       io.emit("online players", JSON.stringify(onlinePlayerList));
       io.emit("game rooms", JSON.stringify(gameRooms));
     }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
   });
 
   socket.on("get online players", () => {

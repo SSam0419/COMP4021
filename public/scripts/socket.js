@@ -121,6 +121,10 @@ const Socket = (function () {
     socket = null;
   };
 
+  const signOut = function () {
+    socket.emit("sign out");
+  };
+
   const joinRoom = function (room, slot, username) {
     console.log("Emitting " + room + " - Player " + slot);
     var message = {
@@ -199,5 +203,6 @@ const Socket = (function () {
     playerTrapped,
     playerAttack,
     quitGame,
+    signOut,
   };
 })();

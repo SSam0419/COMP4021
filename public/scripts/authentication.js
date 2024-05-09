@@ -70,6 +70,7 @@ const Authentication = (function () {
         console.log(json);
         if (json.status === "success") {
           window.location.href = "/";
+          Socket.signOut();
         }
       });
   };
