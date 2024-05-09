@@ -64,6 +64,7 @@ io.on("connection", (socket) => {
   }
 
   socket.on("disconnect", () => {
+    console.log("user disconnected");
     if (socket.request.session.user) {
       const user = socket.request.session.user;
       const { username } = user;
@@ -71,7 +72,16 @@ io.on("connection", (socket) => {
         delete onlinePlayerList[username];
       }
       delete sockets[username];
-      io.emit("remove player", JSON.stringify(user));
+      //leave room as well
+      for (let i = 1; i <= Object.keys(gameRooms).length; i++) {
+        for (let j = 1; j <= 2; j++) {
+          if (gameRooms[i][`player${j}`] === username) {
+            gameRooms[i][`player${j}`] = null;
+          }
+        }
+      }
+      io.emit("online players", JSON.stringify(onlinePlayerList));
+      io.emit("game rooms", JSON.stringify(gameRooms));
     }
   });
 

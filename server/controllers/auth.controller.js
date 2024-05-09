@@ -1,6 +1,18 @@
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 
+const signOut = (req, res) => {
+  console.log("Sign-out request received");
+  const user = req.session.user;
+  if (user) {
+    delete global.onlinePlayerList[user.username];
+    delete req.session.user;
+    res.json({ status: "success", message: "Sign-out successful" });
+  } else {
+    res.json({ status: "error", message: "User is not signed in" });
+  }
+};
+
 const validate = (req, res) => {
   console.log("Validate request received");
   const user = req.session.user;
@@ -76,8 +88,4 @@ const signUp = (req, res) => {
   }
 };
 
-module.exports = {
-  signIn,
-  signUp,
-  validate,
-};
+module.exports = { signOut, signIn, signUp, validate };

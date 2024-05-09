@@ -56,16 +56,22 @@ const Authentication = (function () {
   };
 
   // This function sends a sign-out request to the server
-  const signout = function (onSuccess, onError) {
-    fetch("/signout", {
+  const signout = function () {
+    fetch("/auth/sign-out", {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
-    }).then(() => {
-      user = null;
-      if (onSuccess) {
-        return onSuccess();
-      }
-    });
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => {
+        console.log(json);
+        if (json.status === "success") {
+          window.location.href = "/";
+        }
+      });
   };
 
   // This function sends a register request to the server

@@ -3,6 +3,9 @@ const GameRooms = (function () {
   let slotJoint = null;
 
   const initialize = function () {
+    // log out button
+    $("#log-out-button").click(() => Authentication.signout());
+
     $("#instruction-overlay").hide();
 
     $("#close-instruction-button").click(function () {
