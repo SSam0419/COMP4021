@@ -186,13 +186,13 @@ io.on("connection", (socket) => {
       const keyCode = 68;
       io.emit(
         "game keys event",
-        JSON.stringify({ room, player, keyCode, event: "attackRight" })
+        JSON.stringify({ room, player, keyCode, event: "attackLeft" })
       );
     } else if (direction === "right") {
       const keyCode = 65;
       io.emit(
         "game keys event",
-        JSON.stringify({ room, player, keyCode, event: "attackLeft" })
+        JSON.stringify({ room, player, keyCode, event: "attackRight" })
       );
     }
   });
