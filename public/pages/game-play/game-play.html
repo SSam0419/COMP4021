@@ -28,6 +28,11 @@
             style="text-align: center"
             id="game-over-message"
           ></h2>
+          <h5
+          class="text-danger"
+          style="text-align: center"
+          id="game-over-description"
+        ></h5>
         </h1>
 
         <div style="display: flex; gap: 5px; justify-content: space-between">
@@ -75,10 +80,13 @@
           <p class="cooldown-warning text-danger">Teleporter is on cooldown!</p>
           <p class="trap-status text-danger">Trapped!</p>
           <p class="coin-notification text-success">Coin collected (+1)</p>
-          <p class="hit text-success">You have hit the enemy!</p>
+          <p class="hit text-success">You have hit the enemy! (+5)</p>
           <p class="miss text-danger">You missed!</p>
           <p class="get-hit text-danger">You were hit by the enemy!</p>
           <p class="cheat text-danger">Fallen to the dark...</p>
+          <p class="get-hit-cheat text-danger">Embrace the shadow...</p>
+          <p class="trap-cheat text-danger">Embrace the shadow...</p>
+          <p class="get-hit-cheat text-danger">You Miss...</p>
         </div>
       </div>
       <div id="game-container">
@@ -106,10 +114,13 @@
           <p class="cooldown-warning text-danger">Teleporter is on cooldown!</p>
           <p class="trap-status text-danger">Trapped!</p>
           <p class="coin-notification text-success">Coin collected (+1)</p>
-          <p class="hit text-success">You have hit the enemy!</p>
+          <p class="hit text-success">You have hit the enemy! (+5)</p>
           <p class="miss text-danger">You missed!</p>
           <p class="get-hit text-danger">You were hit by the enemy!</p>
           <p class="cheat text-danger">Fallen to the dark...</p>
+          <p class="get-hit-cheat text-danger">Embrace the shadow...</p>
+          <p class="trap-cheat text-danger">Embrace the shadow...</p>
+          <p class="hit-cheat text-danger">You Miss...</p>
         </div>
       </div>
     </div>
@@ -155,6 +166,7 @@
         const totalGameTime = 240; // Total game time in seconds
         let initComplete = false;
         let hasInteracted = false;
+        let playerStartPosInit = false;
         Authentication.validate(
           () => {
             console.log("User is signed in.");
@@ -259,9 +271,6 @@
                 isPlayer1 ? "rgba(106, 0, 30, 1)" : "rgba(0, 0, 255, 0.8)"
               );
               $("h3#player-2").text(isPlayer1 ? "Enemy" : "Me");
-
-              // start timer
-              startCountdown();
             }
           }
 
@@ -276,6 +285,8 @@
                 score,
               } = GameObjectsConfig.getConfig();
 
+              updateCounter(gameStartTime)
+
               coin.setXY(coinCoord.x, coinCoord.y);
               for (let i = 1; i <= 2; ++i) {
                 transporters[i].setXY(
@@ -286,6 +297,7 @@
               trap.setXY(trapCoord.x, trapCoord.y);
               player1.setXY(playerCoord[1].x, playerCoord[1].y);
               player2.setXY(playerCoord[2].x, playerCoord[2].y);
+              playerStartPosInit = true
 
               const { score1, score2 } = score;
               $(".score-1").text("Score: " + score1);
@@ -307,7 +319,9 @@
             transporters[1].update(now);
             transporters[2].update(now);
             trap.update(now);
-            playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
+            if(playerStartPosInit){
+              playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
+            }
 
             const isCooldown = playerInstance.getIsAttackCooldown();
             const cooldownTxt = isCooldown ? "Cooling" : "Ready to use!";
@@ -412,6 +426,7 @@
           const y = event.clientY - rect.top;
 
           console.log("x: " + x + " y: " + y);
+          console.log(`My Coordinates x${playerInstance.getXY().x} y${playerInstance.getXY().y}`)
           console.log("========end of info=========");
         });
 

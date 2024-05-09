@@ -28,9 +28,13 @@ function handleGameEvents(
         opponentPlayer.getXY().x - player.getAttackPosition().x < 60 &&
         player.getAttackPosition().x - opponentPlayer.getXY().x < 0
       ) {
+        if(!opponentPlayer.getIsCheating() && !opponentPlayer.getIsTakingHit()){
+          console.log("Running Socket hit opponent")
+          Socket.hitOpponent(roomNum, player.getPlayerSlot(), opponentPlayer.getPlayerSlot())
+        }
         opponentPlayer.takeHit();
-        Notification(player.getPlayerSlot(), "hit");
-        Notification(player.getPlayerSlot() == 1 ? 2 : 1, "get hit");
+        // Notification(player.getPlayerSlot(), opponentPlayer.getIsCheating()?"hit cheat":"hit");
+        Notification(opponentPlayer.getPlayerSlot(), opponentPlayer.getIsCheating()?"get hit cheat":"get hit");
       }
     } else {
       console.log(player.getAttackDirection());
@@ -42,9 +46,13 @@ function handleGameEvents(
         player.getAttackPosition().x - opponentPlayer.getXY().x < 60 &&
         opponentPlayer.getXY().x - player.getAttackPosition().x > -60
       ) {
+        if(!opponentPlayer.getIsCheating() && !opponentPlayer.getIsTakingHit()){
+          console.log("Running Socket hit opponent")
+          Socket.hitOpponent(roomNum, player.getPlayerSlot(), opponentPlayer.getPlayerSlot())
+        }
         opponentPlayer.takeHit();
-        Notification(player.getPlayerSlot(), "hit");
-        Notification(player.getPlayerSlot() == 1 ? 2 : 1, "get hit");
+        // Notification(player.getPlayerSlot(), opponentPlayer.getIsCheating()?"hit cheat":"hit");
+        Notification(opponentPlayer.getPlayerSlot(), opponentPlayer.getIsCheating()?"get hit cheat":"get hit");
       }
     }
   }
@@ -66,7 +74,7 @@ function handleGameEvents(
     !player.getInFall() &&
     !player.getInJump()
   ) {
-    Notification(player.getPlayerSlot(), "trap");
+    Notification(player.getPlayerSlot(), player.getIsCheating()?"trap cheat":"trap");
     let boardId =
       player.getPlayerSlot() === 1 ? "player-1-board" : "player-2-board";
 

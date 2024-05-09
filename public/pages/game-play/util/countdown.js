@@ -5,17 +5,9 @@ function formatTime(seconds) {
     .toString()
     .padStart(2, "0")}`;
 }
-function startCountdown() {
-  // Get the initial time remaining (4 minutes)
-  let timeRemaining = 60 * 4;
+function updateCounter(gameTime) {
   const timeRemainingElement = $("#time-remaining");
 
-  // Start the countdown
-  const countdownInterval = setInterval(() => {
-    timeRemaining--;
-    timeRemainingElement.text(formatTime(timeRemaining));
-    if (timeRemaining === 0) {
-      clearInterval(countdownInterval);
-    }
-  }, 1000);
+  const timeRemaining = 240 - gameTime;
+  timeRemainingElement.text(formatTime(timeRemaining));
 }

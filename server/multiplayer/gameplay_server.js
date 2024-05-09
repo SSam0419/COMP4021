@@ -5,7 +5,7 @@
 // When user input, user should do action corresponds to the correct player through websocket
 const GameServer = function () {
   let isGameEnd = false;
-  let gameStartTime = 0; // The timestamp when the game starts
+  let gameStartTime = 0; // Please DONOT modify the game time!! there is a lot dependencies to it
   let transporterCooldown = 5000; // The cooldown for using the transporter
   let transporterTimeStamp = 0;
 
@@ -41,6 +41,7 @@ const GameServer = function () {
     1: { username: "", score: 0 },
     2: { username: "", score: 0 },
   };
+  let playerCheatRecord = { 1: false, 2:false}
 
   // Sharing Coordinates
   let playerCoord = { 1: { x: 215, y: 580 }, 2: { x: 412, y: 580 } };
@@ -88,7 +89,7 @@ const GameServer = function () {
 
   // Be called by server socket
   const initialize = function (username1, username2) {
-    gameStartTime = Date.now();
+    gameStartTime = 0;
     isGameEnd = false;
     playerStatus = {
       1: { username: username1, score: 0 },
@@ -113,6 +114,7 @@ const GameServer = function () {
   // Natural Update By Time
   const gameTick = function () {
     if (!isGameEnd) {
+      gameStartTime += 1
       coinAge += 150;
       teleporterAge[1] += 500;
       teleporterAge[2] += 500;
@@ -139,17 +141,19 @@ const GameServer = function () {
       }
 
       for (let i = 1; i <= 2; ++i) {
-        if (sockets[i])
+        if (sockets[i]){
           sockets[i].emit("game stat", JSON.stringify(packReturn()));
+        }
       }
     }
 
-    if (Date.now() - gameStartTime >= totalGameTime * 1000) {
+    if (gameStartTime >= totalGameTime) {
       finishGame();
       for (let i = 1; i <= 2; ++i) {
         if (sockets[i])
           sockets[i].emit("game end", JSON.stringify(packReturn()));
       }
+      return
     }
 
     for (let i = 1; i <= 2; ++i) {
@@ -159,13 +163,16 @@ const GameServer = function () {
           if (sockets[i])
             sockets[i].emit("game end", JSON.stringify(packReturn()));
         }
+        return 
       }
     }
+    // console.log("Ticking")
 
     setTimeout(() => gameTick(), 1000);
   };
 
   const finishGame = () => {
+    console.log("game is fininshed")
     isGameEnd = true;
     for (let i = 1; i <= 2; ++i) {
       if (sockets[i])
@@ -186,6 +193,7 @@ const GameServer = function () {
       playerCoord,
       score,
       isGameEnd,
+      playerCheatRecord
     };
   };
 
@@ -214,6 +222,10 @@ const GameServer = function () {
   const setPlayer = function (username, slot) {
     playerUsername[slot] = username;
   };
+
+  const playerCheat = function (slot) {
+    playerCheatRecord[slot] = true;
+  }
 
   const doCommand = function (command, player, parameters) {
     //{room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
@@ -268,6 +280,18 @@ const GameServer = function () {
     }, 2000);
   };
 
+  // Coin Taking from opponent (Neagtive possible)
+  const playerHitOpponent = function (player, opponentPlayer){
+    console.log(`${player} Hit Opponent ${opponentPlayer}`)
+    playerStatus[player].score += 5;
+    playerStatus[opponentPlayer].score -= 5;
+    for (let i = 1; i <= 2; ++i) {
+      if (sockets[i] !== null) {
+        sockets[i].emit("game stat", JSON.stringify(packReturn()));
+      }
+    }
+  }
+
   const quitGame = function (player) {
     sockets[player] = null;
     if (sockets[1] == null && sockets[2] == null) {
@@ -287,6 +311,8 @@ const GameServer = function () {
     quitGame,
     deattachSocket,
     getIsGameEnd,
+    playerHitOpponent,
+    playerCheat
   };
 };
 

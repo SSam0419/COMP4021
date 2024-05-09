@@ -12,6 +12,12 @@ const Notification = function (playerSlot, type) {
         $(`#player-${playerSlot}-board .trap-status`).hide();
       }, 3000);
       break;
+    case "trap cheat":
+      $(`#player-${playerSlot}-board .trap-status-cheat`).show();
+      setTimeout(function () {
+        $(`#player-${playerSlot}-board .trap-status-cheat`).hide();
+      }, 3000);
+      break;
     case "coin":
       $(`#player-${playerSlot}-board .coin-notification`).show();
       setTimeout(function () {
@@ -24,6 +30,13 @@ const Notification = function (playerSlot, type) {
         $(`#player-${playerSlot}-board .hit`).hide();
       }, 3000);
       break;
+    case "hit cheat":
+      console.log("Playerslot"+playerSlot)
+      $(`#player-${playerSlot}-board .hit-cheat`).show();
+      setTimeout(function () {
+        $(`#player-${playerSlot}-board .hit-cheat`).hide();
+      }, 3000);
+      break;
     case "miss":
       $(`#player-${playerSlot}-board .miss`).show();
       setTimeout(function () {
@@ -34,6 +47,12 @@ const Notification = function (playerSlot, type) {
       $(`#player-${playerSlot}-board .get-hit`).show();
       setTimeout(function () {
         $(`#player-${playerSlot}-board .get-hit`).hide();
+      }, 3000);
+      break;
+    case "get hit cheat":
+      $(`#player-${playerSlot}-board .get-hit-cheat`).show();
+      setTimeout(function () {
+        $(`#player-${playerSlot}-board .get-hit-cheat`).hide();
       }, 3000);
       break;
     case "cheat":

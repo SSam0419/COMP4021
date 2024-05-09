@@ -65,45 +65,76 @@ const Socket = (function () {
     });
 
     socket.on("game end", (message) => {
-      const { score } = JSON.parse(message);
+      const { score, playerCheatRecord } = JSON.parse(message);
       const { roomNum, playerSlot } = GameroomConfig.getConfig();
       console.log("Game Over");
       console.log(JSON.parse(message));
       const $text = $("#game-over-overlay #game-over-message");
+      const $description = $("#game-over-description")
       if (playerSlot === 1) {
         if (score.score1 > score.score2) {
-          if (score.score1 < 30) {
-            $text.text("Time's up! You won!");
-            $text.attr("class", "text-success");
-          } else {
-            $text.text("You got 30 coins! You won!");
-            $text.attr("class", "text-success");
+            if(!playerCheatRecord[1]){
+              if (score.score1 < 30) {
+                $text.text("Time's up! You won!");
+                $text.attr("class", "text-success");
+                $description.text("🌓✨ “As the last rays of twilight fade, you emerge victorious!” 🌓✨");
+                $description.attr("class", "text-success");
+              } else {
+                $text.text("You got 30 coins! You won!");
+                $text.attr("class", "text-success");
+                $description.text("🌓✨ “With 30 coins in hand, you transcend mortal boundaries and become the true Twilight Champion!” 🌓✨");
+                $description.attr("class", "text-success");
+              }
+          }else{
+            $text.text("You Won ?");
+            $text.attr("class", "text-danger");
+            $description.text("“By some twist of fate, you emerge triumphant. But is it skill or sorcery that guides your hand? The Twin Monarchs raise an eyebrow, questioning your path to victory.” ❓❓❓");
+            $description.attr("class", "text-danger");
           }
         } else {
           if (score.score2 < 30) {
             $text.text("Time's up! You lost.");
             $text.attr("class", "text-danger");
+            $description.text("🌓✨ “Alas, the shifting sands of fate have turned against you. Twilight slips through your grasp.” 🌓✨");
+            $description.attr("class", "text-danger");
           } else {
             $text.text("Your opponent got 30 coins first. You lost.");
             $text.attr("class", "text-danger");
+            $description.text("🌓✨ “Your rival, swift as a shadow, claims the final coin. The Twin Monarchs weep for your loss.” 🌓✨");
+            $description.attr("class", "text-danger");
           }
         }
       } else {
         if (score.score2 > score.score1) {
-          if (score.score2 < 30) {
-            $text.text("Time's up! You won!");
-            $text.attr("class", "text-success");
-          } else {
-            $text.text("You got 30 coins! You won!");
-            $text.attr("class", "text-success");
+            if(!playerCheatRecord[2]){
+              if (score.score2 < 30) {
+                $text.text("Time's up! You won!");
+                $text.attr("class", "text-success");
+                $description.text("🌓✨ “As the last rays of twilight fade, you emerge victorious!” 🌓✨");
+                $description.attr("class", "text-success");
+              } else {
+                $text.text("You got 30 coins! You won!");
+                $text.attr("class", "text-success");
+                $description.text("🌓✨ “With 30 coins in hand, you transcend mortal boundaries and become the true Twilight Champion!” 🌓✨");
+                $description.attr("class", "text-success");
+              }
+          }else{
+            $text.text("You Won ?");
+            $text.attr("class", "text-danger");
+            $description.text("“By some twist of fate, you emerge triumphant. But is it skill or sorcery that guides your hand? The Twin Monarchs raise an eyebrow, questioning your path to victory.” ❓🌓✨");
+            $description.attr("class", "text-danger");
           }
         } else {
           if (score.score1 < 30) {
             $text.text("Time's up! You lost.");
             $text.attr("class", "text-danger");
+            $description.text("🌓✨ “Alas, the shifting sands of fate have turned against you. Twilight slips through your grasp.” 🌓✨");
+            $description.attr("class", "text-danger");
           } else {
             $text.text("Your opponent got 30 coins first. You lost.");
             $text.attr("class", "text-danger");
+            $description.text("🌓✨ “Your rival, swift as a shadow, claims the final coin. The Twin Monarchs weep for your loss.” 🌓✨");
+            $description.attr("class", "text-danger");
           }
         }
       }
@@ -158,6 +189,12 @@ const Socket = (function () {
     }
   };
 
+  const playerCheat= function (room, player) {
+    message = { room, player };
+    socket.emit("player cheat", JSON.stringify(message));
+    playerKeys( room, player, 67, "cheat")
+  };
+
   const playerKeys = function (room, player, keyCode, event) {
     message = { room, player, keyCode, event };
     socket.emit("game keys", JSON.stringify(message));
@@ -182,6 +219,10 @@ const Socket = (function () {
     message = { room, player };
     socket.emit("quit game", JSON.stringify(message));
   };
+  const hitOpponent = function (room, player, opponent) {
+    message = { room, player, opponent }
+    socket.emit("player hit", JSON.stringify(message));
+  }
 
   return {
     getSocket,
@@ -200,5 +241,7 @@ const Socket = (function () {
     playerAttack,
     quitGame,
     signOut,
+    hitOpponent,
+    playerCheat
   };
 })();

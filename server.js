@@ -197,6 +197,13 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("player cheat", (message)=>{
+    const { room, player } = JSON.parse(message);
+    if(room && player){
+      gameServers[room].playerCheat(player);
+    }
+  });
+
   socket.on("coin collected", (message) => {
     const { room, player } = JSON.parse(message);
     gameServers[room].playerCollectedCoin(player);
@@ -220,6 +227,11 @@ io.on("connection", (socket) => {
     const { room, player } = JSON.parse(message);
     console.log(`player ${player} toggle cheat`);
     gameServers[room].playerCheat(player);
+  });
+  socket.on("player hit", (message) => {
+    const { room, player, opponent } = JSON.parse(message);
+    console.log(`player ${player} Hit Opponent`);
+    gameServers[room].playerHitOpponent(player, opponent);
   });
 });
 

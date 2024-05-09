@@ -13,7 +13,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   let isInteracted = false;
   let isCheating = false;
   let lastUpdate = 0;
-  let attackTimeout = null;
+  let actionTimeout = null;
   
   // This is the sprite sequences of the player facing different directions.
   const sequences = MOVEMENT_SEQUENCES;
@@ -228,7 +228,11 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
 
-    setTimeout(() => {
+    if (actionTimeout !== null){
+      clearTimeout(actionTimeout)
+    }
+
+    actionTimeout = setTimeout(() => {
       isAttacking = false;
       attackDirection = "";
       playerSprites.movement.setXY(
@@ -267,7 +271,11 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
 
-    setTimeout(() => {
+    if (actionTimeout !== null){
+      clearTimeout(actionTimeout)
+    }
+
+    actionTimeout = setTimeout(() => {
       isAttacking = false;
       attackDirection = "";
       playerSprites.movement.setXY(
@@ -320,7 +328,12 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     );
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
-    setTimeout(() => {
+
+    if (actionTimeout !== null){
+      clearTimeout(actionTimeout)
+    }
+
+    actionTimeout = setTimeout(() => {
       isTakingHit = false;
       playerSprites.movement.setXY(
         playerSprites.death.getXY().x,
@@ -380,7 +393,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   const update = function (time) {
     const now = Date.now()
     if(lastUpdate===0) lastUpdate = now;
-    const ratio = 1/ (now - lastUpdate);
+    const ratio = (now - lastUpdate);
     lastUpdate = now;
 
     /* Update the player if the player is moving */
@@ -396,17 +409,17 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       /* Move the player */
       switch (direction) {
         case 1:
-          x -= speed*ratio/10;
+          x -= ratio/(speed)*30;
           break;
         case 2:
-          x += speed*ratio/10;
+          x += ratio/(speed)*30;
           break;
       }
     }
 
     if (getInJump()) {
       inCollider = false;
-      y -= 20*ratio;
+      y -= ratio/3.5;
       if (direction != 0) {
         /* Change sprite mid-air */
         switch (direction) {
@@ -424,7 +437,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }
 
     if (getInFall()) {
-      y += 23*ratio;
+      y += ratio/3.5;
 
       if (direction != 0) {
         /* Change sprite mid-air */
