@@ -15,6 +15,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
   let lastUpdate = 0;
   let actionTimeout = null;
   
+  let savedCoord = { x:0, y:0}
+
   // This is the sprite sequences of the player facing different directions.
   const sequences = MOVEMENT_SEQUENCES;
 
@@ -220,10 +222,13 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     attackDirection = "left";
     Sounds.playDirect('attack')
 
+    if(playerSprites.movement.getXY().x != -100 && playerSprites.movement.getXY().y != -100)
+    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
+
     playerSprites.attackLeft.setSequence(attackRightSequences);
     playerSprites.attackLeft.setXY(
-      playerSprites.movement.getXY().x,
-      playerSprites.movement.getXY().y - 5
+      savedCoord.x,
+      savedCoord.y - 5
     );
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
@@ -236,8 +241,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       isAttacking = false;
       attackDirection = "";
       playerSprites.movement.setXY(
-        playerSprites.attackLeft.getXY().x,
-        playerSprites.attackLeft.getXY().y -5
+        savedCoord.x,
+        savedCoord.y -5
       );
       playerSprites.movement.setSequence(sequences.idle);
       // remove attack sprite
@@ -263,10 +268,13 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     isAttackCooldown = true;
     attackDirection = "right";
 
+    if(playerSprites.movement.getXY().x != -100 && playerSprites.movement.getXY().y != -100)
+    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
+
     playerSprites.attackRight.setSequence(attackRightSequences);
     playerSprites.attackRight.setXY(
-      playerSprites.movement.getXY().x,
-      playerSprites.movement.getXY().y - 5
+      savedCoord.x,
+      savedCoord.y - 5
     );
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
@@ -279,8 +287,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       isAttacking = false;
       attackDirection = "";
       playerSprites.movement.setXY(
-        playerSprites.attackRight.getXY().x,
-        playerSprites.attackRight.getXY().y - 5
+        savedCoord.x,
+        savedCoord.y - 5
       );
       playerSprites.movement.setSequence(sequences.idle);
       // remove attack sprite
@@ -321,10 +329,13 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     console.log("taking hit!");
     isTakingHit = true;
 
+    if(playerSprites.movement.getXY().x != -100 && playerSprites.movement.getXY().y != -100)
+    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
+
     playerSprites.death.setSequence(deathSequences);
     playerSprites.death.setXY(
-      playerSprites.movement.getXY().x,
-      playerSprites.movement.getXY().y
+      savedCoord.x,
+      savedCoord.y
     );
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
@@ -336,8 +347,8 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     actionTimeout = setTimeout(() => {
       isTakingHit = false;
       playerSprites.movement.setXY(
-        playerSprites.death.getXY().x,
-        playerSprites.death.getXY().y
+        savedCoord.x,
+        savedCoord.y
       );
       playerSprites.movement.setSequence(sequences.idle);
       // remove attack sprite
