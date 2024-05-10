@@ -48,6 +48,7 @@ const Socket = (function () {
         playerCoord,
         score,
         isGameEnd,
+        playerCheating
       } = JSON.parse(message);
       GameObjectsConfig.setConfig(
         gameStartTime,
@@ -56,7 +57,8 @@ const Socket = (function () {
         trapCoord,
         playerCoord,
         score,
-        isGameEnd
+        isGameEnd,
+        playerCheating
       );
     });
 
@@ -69,6 +71,8 @@ const Socket = (function () {
       const { roomNum, playerSlot } = GameroomConfig.getConfig();
       console.log("Game Over");
       console.log(JSON.parse(message));
+      $("#gameover-score-1").text(`Score : ${score.score1}`)
+      $("#gameover-score-2").text(`Score : ${score.score2}`)
       const $text = $("#game-over-overlay #game-over-message");
       const $description = $("#game-over-description")
       if (playerSlot === 1) {
@@ -192,7 +196,6 @@ const Socket = (function () {
   const playerCheat= function (room, player) {
     message = { room, player };
     socket.emit("player cheat", JSON.stringify(message));
-    playerKeys( room, player, 67, "cheat")
   };
 
   const playerKeys = function (room, player, keyCode, event) {
@@ -223,6 +226,10 @@ const Socket = (function () {
     message = { room, player, opponent }
     socket.emit("player hit", JSON.stringify(message));
   }
+  const checkGameEnd = function (room, player) {
+    message = { room, player}
+    socket.emit("check gameend", JSON.stringify(message));
+  }
 
   return {
     getSocket,
@@ -242,6 +249,7 @@ const Socket = (function () {
     quitGame,
     signOut,
     hitOpponent,
-    playerCheat
+    playerCheat,
+    checkGameEnd
   };
 })();

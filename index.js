@@ -223,15 +223,15 @@ io.on("connection", (socket) => {
     io.emit("room joint", JSON.stringify(gameRooms));
     gameServers[room].quitGame(player);
   });
-  socket.on("player cheat", (message) => {
-    const { room, player } = JSON.parse(message);
-    console.log(`player ${player} toggle cheat`);
-    gameServers[room].playerCheat(player);
-  });
   socket.on("player hit", (message) => {
     const { room, player, opponent } = JSON.parse(message);
     console.log(`player ${player} Hit Opponent`);
     gameServers[room].playerHitOpponent(player, opponent);
+  });
+  socket.on("check gameend", (message) => {
+    const { room, player } = JSON.parse(message);
+    console.log(room)
+    gameServers[room].checkGameEnd();
   });
 });
 

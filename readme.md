@@ -1,31 +1,48 @@
 # Checklist
 - Game front page
-	- Game Description and instructions
-     - **AI Generate a background story?**
-	- Player registration
-	- Player pair up
-		- Can join a game with other player
-- Game play page
-	- Things in the game
-	- Players' interaction
-	- Game Controls
-	- Game duration
-		- **3-4 minutes**
-	- Cheat mode
+	- Game Description and instructions (5)
+    	- A story background and game instructions is shown in the instruction button after login
+		- **Please check the instruction button. We have updated the story after the video recording**
+	- Player sign in and sign up (10+10)
+		- Player can sign up by clicking the sign up button in the login screen
+		- Player have to be signed in before entering a game room
+	- Player pair up (15)
+		- Player can join a with another player by joining a gameroom
+- Game play page (40)
+	- 4 Things in the game
+		- Coins: Energy of sun and light, player collect coins to gain score
+		- Trap: Player will be grounded for few seconds when stepping on trap
+		- Teleporter: Player will teleport to the complementary teleporter when stepping on
+		- Attack: An action to Hit other player, robbing five coins from opponent, 5 seconds cooldown
+	- Players' interaction (20)
+		- Position of two players are share among two screen.
+		- Player could attack another player 
+	- Game Controls (10)
+		- Movement control by arrow keys
+		- Attack button (Key A, D)
+		- Cheat mode (Key C)
+	- Game duration (10)
+		- The maximum game time last for 4 minutes
+		- If one of the player get 30 coins before the game time, the player wins and the game ends.
+	- Cheat mode (15)
 		- Game finish much quicker
-    		- **Can Disable**
+    		- In cheat mode, player has no cooldown in attack, also become invincible to trap and opponent's attack
+			- The cheat mode can be toggled off, but the action will be recorded by the server for an easter egg in game description
 - Game over page
-	- Player statistics
-		- **Relevant statistics (Coin get, Beat up player count?)**
-	- Player ranking
-		- **Leader Board? (Win how much game, get how much coins)**
-	- Restart the game/ back to front page
-- Graphic and sounds
+	- Player statistics (10)
+		- Scores of two player will be shown when the game ends
+	- Player ranking (10)
+		- An Win/ Lose description (related to the story) will appear when game end
+	- Restart the game/ back to front page (10)
+		- A Quit button to leave the gameroom
+		- Player may also wait in the gameroom and wait for other players to join and initiate a new game
+- Graphic and sounds (10)
 	- SVG/ Canvas
-	- **Two different sounds**
-- Running the project
-	- **Single 'npm install'**
-	- **README file**
-- User suppport
-	- Handle multiple users in realtime
+		- Canvas is mainly used for the game scene
+	- Sounds
+		- Sound fx, includes collecting coins, trap, teleporter, hit, taking hit, jump, land on platform
+		- Background music, also a version when cheat mode is on
+- Running the project (15)
+- User suppport (30)
+	- Interactions of multiple player can be handled in real time
 - Game quality

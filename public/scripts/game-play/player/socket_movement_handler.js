@@ -35,10 +35,6 @@ function handlePlayerMovementSocket(player1, player2, message) {
         playerInstance.stop(1);
         playerInstance.attack("left");
         break;
-      case "cheat":
-        playerInstance.cheatToggle();
-        Notification(playerInstance.getPlayerSlot(), "cheat")
-        break;
     }
   };
 

@@ -39,14 +39,14 @@
           <div>
             <h3>Player 1</h3>
             <h4>
-              <span class="score-1">Score : _</span>
+              <span class="score-1" id="gameover-score-1">Score : _</span>
               <span class="text-muted>">/30</span>
             </h4>
           </div>
           <div>
             <h3>Player 2</h3>
             <h4>
-              <span class="score-2">Score : _</span>
+              <span class="score-2" id="gameover-score-2">Score : _</span>
               <span class="text-muted">/30</span>
             </h4>
           </div>
@@ -69,7 +69,7 @@
       <div id="player-1-board" class="player-board">
         <h3 id="player-1">Player 1</h3>
         <h4>
-          <span class="score-1">Score : 10 </span>
+          <span class="score-1">Score : 0 </span>
           <span class="text-muted">/30</span>
         </h4>
         <div>
@@ -103,7 +103,7 @@
       <div id="player-2-board" class="player-board">
         <h3 id="player-2">Player 2</h3>
         <h4>
-          <span class="score-2">Score : 10 </span>
+          <span class="score-2">Score : 0 </span>
           <span class="text-muted">/30</span>
         </h4>
         <div>
@@ -160,6 +160,7 @@
     <script>
       $(function () {
         let isGameEnd = false;
+        let loadScreenDone = false;
         let roomNum = null;
         let playerSlot = null;
         const maxScore = 30;
@@ -167,6 +168,7 @@
         let initComplete = false;
         let hasInteracted = false;
         let playerStartPosInit = false;
+        let timePrevious = 0;
         Authentication.validate(
           () => {
             console.log("User is signed in.");
@@ -231,9 +233,10 @@
         let colliders = new Array(platforms.length + 1).fill(false); // The colliders
 
         //Should decide position base on which player
-        const player1 = Player(context, 100, 580, gameArea, 1); // The player
-        const player2 = Player(context, 500, 580, gameArea, 2); // The player
+        const player1 = Player(context, 215, 580, gameArea, 1); // The player
+        const player2 = Player(context, 412, 580, gameArea, 2); // The player
         let playerInstance = null;
+        let opponentInstance = null;
         let myScore = 0;
         let opponentScore = 0;
 
@@ -257,7 +260,7 @@
 
               // Set player instance based on playerSlot
               playerInstance = playerSlot === 2 ? player2 : player1;
-
+              opponentInstance = playerSlot === 2? player1: player2;
               // Set board colors and player names based on playerSlot
               const isPlayer1 = playerSlot === 1;
               $("#player-1-board").css(
@@ -271,6 +274,13 @@
                 isPlayer1 ? "rgba(106, 0, 30, 1)" : "rgba(0, 0, 255, 0.8)"
               );
               $("h3#player-2").text(isPlayer1 ? "Enemy" : "Me");
+              
+              $(window).on('focus', function() {
+                loadScreenDone = false
+                console.log("Back to focus")
+              });
+
+              Socket.checkGameEnd(roomNum, playerSlot) // Must trigger game stat at least once to handle game end
             }
           }
 
@@ -283,9 +293,19 @@
                 trapCoord,
                 playerCoord,
                 score,
+                isGameEnd,
+                playerCheating
               } = GameObjectsConfig.getConfig();
 
               updateCounter(gameStartTime)
+
+              if(isGameEnd){
+                endGame()
+                return
+              }
+
+              player1.cheatToggle(playerCheating[1]);
+              player2.cheatToggle(playerCheating[2]);
 
               coin.setXY(coinCoord.x, coinCoord.y);
               for (let i = 1; i <= 2; ++i) {
@@ -295,11 +315,17 @@
                 );
               }
               trap.setXY(trapCoord.x, trapCoord.y);
-              //player1.setXY(playerCoord[1].x, playerCoord[1].y);
-              //player2.setXY(playerCoord[2].x, playerCoord[2].y);
+              if(!loadScreenDone){
+                player1.setXY(playerCoord[1].x, playerCoord[1].y);
+                player2.setXY(playerCoord[2].x, playerCoord[2].y);
+                loadScreenDone = true;
+              }
+
               playerStartPosInit = true
 
               const { score1, score2 } = score;
+              myScore = playerSlot===2? score2:score1
+              opponentScore = playerSlot===2? score1:score2
               $(".score-1").text("Score: " + score1);
               $(".score-2").text("Score: " + score2);
             }
@@ -319,6 +345,8 @@
             transporters[1].update(now);
             transporters[2].update(now);
             trap.update(now);
+            
+            // Prevent initializing postion when game stat is not completely loaded
             if(playerStartPosInit){
               playerInstance.updateSocketPlayerMovement(roomNum, playerSlot);
             }

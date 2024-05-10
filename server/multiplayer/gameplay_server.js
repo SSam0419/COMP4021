@@ -42,6 +42,7 @@ const GameServer = function () {
     2: { username: "", score: 0 },
   };
   let playerCheatRecord = { 1: false, 2:false}
+  let playerCheating = { 1:false, 2:false}
 
   // Sharing Coordinates
   let playerCoord = { 1: { x: 215, y: 580 }, 2: { x: 412, y: 580 } };
@@ -81,6 +82,8 @@ const GameServer = function () {
     teleporterAge = { 1: -1, 2: -1 };
     trapAge = -1;
     sockets = { 1: null, 2: null };
+    playerCheatRecord = { 1: false, 2:false}
+    playerCheating = { 1:false, 2:false}
   };
 
   const deattachSocket = function (slot) {
@@ -95,6 +98,8 @@ const GameServer = function () {
       1: { username: username1, score: 0 },
       2: { username: username2, score: 0 },
     };
+    playerCheatRecord = { 1: false, 2:false}
+    playerCheating = { 1:false, 2:false}
     playerCoord = { 1: { x: 215, y: 580 }, 2: { x: 412, y: 580 } };
 
     coinCoord = randomCoinPoint();
@@ -111,6 +116,11 @@ const GameServer = function () {
     gameTick();
   };
 
+  const checkGameEnd = function () {
+    if (isGameEnd){
+      sendEndGame()
+    }
+  }
   // Natural Update By Time
   const gameTick = function () {
     if (!isGameEnd) {
@@ -140,29 +150,19 @@ const GameServer = function () {
         trapAge = randomAge(trapMaxAge);
       }
 
-      for (let i = 1; i <= 2; ++i) {
-        if (sockets[i]){
-          sockets[i].emit("game stat", JSON.stringify(packReturn()));
-        }
-      }
+      sendGameStat();
     }
 
     if (gameStartTime >= totalGameTime) {
       finishGame();
-      for (let i = 1; i <= 2; ++i) {
-        if (sockets[i])
-          sockets[i].emit("game end", JSON.stringify(packReturn()));
-      }
+      sendEndGame();
       return
     }
 
     for (let i = 1; i <= 2; ++i) {
       if (playerStatus[i].score >= maxScore) {
         finishGame();
-        for (let i = 1; i <= 2; ++i) {
-          if (sockets[i])
-            sockets[i].emit("game end", JSON.stringify(packReturn()));
-        }
+        sendEndGame();
         return 
       }
     }
@@ -171,13 +171,25 @@ const GameServer = function () {
     setTimeout(() => gameTick(), 1000);
   };
 
+  function sendEndGame() {
+    for (let i = 1; i <= 2; ++i) {
+      if (sockets[i])
+        sockets[i].emit("game end", JSON.stringify(packReturn()));
+    }
+  }
+
+  const sendGameStat = function() {
+    for (let i = 1; i <= 2; ++i) {
+      if (sockets[i]) {
+        sockets[i].emit("game stat", JSON.stringify(packReturn()));
+      }
+    }
+  }
+
   const finishGame = () => {
     console.log("game is fininshed")
     isGameEnd = true;
-    for (let i = 1; i <= 2; ++i) {
-      if (sockets[i])
-        sockets[i].emit("game stat", JSON.stringify(packReturn()));
-    }
+    sendGameStat()
   };
 
   const packReturn = function () {
@@ -193,7 +205,8 @@ const GameServer = function () {
       playerCoord,
       score,
       isGameEnd,
-      playerCheatRecord
+      playerCheatRecord,
+      playerCheating
     };
   };
 
@@ -225,10 +238,12 @@ const GameServer = function () {
 
   const playerCheat = function (slot) {
     playerCheatRecord[slot] = true;
+    playerCheating[slot] = !playerCheating[slot]
+    console.log(playerCheating[slot])
   }
 
   const doCommand = function (command, player, parameters) {
-    //{room: 1, player: 1 , command: "updatePos/getCoin/teleport/hitTrap", parameters: {x=123,y=456}}
+    //{room: 1, player: 1 , command: "updatePos", parameters: {x=123,y=456}}
     switch (command) {
       case "updatePos":
         playerCoord[player] = parameters;
@@ -244,11 +259,7 @@ const GameServer = function () {
     playerStatus[player].score += 1;
     coinCoord = randomCoinPoint();
     coinAge = randomAge(coinMaxAge);
-    for (let i = 1; i <= 2; ++i) {
-      if (sockets[i] !== null) {
-        sockets[i].emit("game stat", JSON.stringify(packReturn()));
-      }
-    }
+    sendGameStat();
   };
 
   const playerTeleported = function (player, teleporterSteppedOn) {
@@ -285,11 +296,7 @@ const GameServer = function () {
     console.log(`${player} Hit Opponent ${opponentPlayer}`)
     playerStatus[player].score += 5;
     playerStatus[opponentPlayer].score -= 5;
-    for (let i = 1; i <= 2; ++i) {
-      if (sockets[i] !== null) {
-        sockets[i].emit("game stat", JSON.stringify(packReturn()));
-      }
-    }
+    sendGameStat()
   }
 
   const quitGame = function (player) {
@@ -312,7 +319,9 @@ const GameServer = function () {
     deattachSocket,
     getIsGameEnd,
     playerHitOpponent,
-    playerCheat
+    playerCheat,
+    sendGameStat,
+    checkGameEnd
   };
 };
 

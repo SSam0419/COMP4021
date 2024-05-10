@@ -25,8 +25,8 @@ function handleGameEvents(
         Math.abs(player.getAttackPosition().y - opponentPlayer.getXY().y) <
           15 &&
         // opponent is on the right within 50px
-        opponentPlayer.getXY().x - player.getAttackPosition().x < 60 &&
-        player.getAttackPosition().x - opponentPlayer.getXY().x < 0
+        opponentPlayer.getXY().x - player.getAttackPosition().x <= 60 &&
+        opponentPlayer.getXY().x - player.getAttackPosition().x >= 0
       ) {
         if(!opponentPlayer.getIsCheating() && !opponentPlayer.getIsTakingHit()){
           console.log("Running Socket hit opponent")
@@ -37,16 +37,17 @@ function handleGameEvents(
         Notification(opponentPlayer.getPlayerSlot(), opponentPlayer.getIsCheating()?"get hit cheat":"get hit");
       }
     } else {
-      console.log(player.getAttackDirection());
-      console.log(player.getAttackPosition().x - opponentPlayer.getXY().x);
+      console.log(player.getAttackPosition());
+      console.log(opponentPlayer.getXY())
+      console.log(player.getAttackPosition().x - opponentPlayer.getXY().x)
       if (
         Math.abs(player.getAttackPosition().y - opponentPlayer.getXY().y) <
           15 &&
         // opponent is on the left within 50px
-        player.getAttackPosition().x - opponentPlayer.getXY().x < 60 &&
-        opponentPlayer.getXY().x - player.getAttackPosition().x > -60
+        player.getAttackPosition().x - opponentPlayer.getXY().x <= 60 &&
+        player.getAttackPosition().x - opponentPlayer.getXY().x >= 0
       ) {
-        if(!opponentPlayer.getIsCheating() && !opponentPlayer.getIsTakingHit()){
+        if(!opponentPlayer.getIsCheating() && !opponentPlayer.getIsTakingHit() && player.getPlayerSlot()===playerSlot){
           console.log("Running Socket hit opponent")
           Socket.hitOpponent(roomNum, player.getPlayerSlot(), opponentPlayer.getPlayerSlot())
         }

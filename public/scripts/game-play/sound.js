@@ -62,7 +62,7 @@ const Sounds = function(){
     const playBGM = function(sound, volume){
         if(bgmPlaying !== null){
             if(bgmPlaying===sound) return;
-            console.log("BGM Previous: "+bgmPlaying)
+            // console.log("BGM Previous: "+bgmPlaying)
             sounds[bgmPlaying].audio.pause()
             sounds[sound].audio.currentTime = 0;
             sounds[sound].isPlaying = false
@@ -71,7 +71,7 @@ const Sounds = function(){
         if(volume){
             sounds[sound].audio.volume = volume;
         }
-        console.log("BGM playing: "+bgmPlaying)
+        // console.log("BGM playing: "+bgmPlaying)
         sounds[bgmPlaying].audio.loop = true
         sounds[bgmPlaying].audio.play()
         sounds[bgmPlaying].isPlaying = true
@@ -83,7 +83,7 @@ const Sounds = function(){
     }
 
     const playDirect = function(sound, volume){
-        console.log(sound)
+        // console.log(sound)
         if(volume){
             sounds[sound].audio.volume = volume;
         }

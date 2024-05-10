@@ -5,7 +5,8 @@ const GameObjectsConfig = (function () {
     trapCoord,
     playerCoord,
     score,
-    isGameEnd = null;
+    isGameEnd,
+    playerCheating = null;
   let updateTrigger;
 
   const setConfig = function (
@@ -15,7 +16,8 @@ const GameObjectsConfig = (function () {
     trapCoordA,
     playerCoordA,
     scoreA,
-    isGameEndA
+    isGameEndA,
+    playerCheatingA
   ) {
     updateTrigger = true;
     gameStartTime = gameStartTimeA;
@@ -25,6 +27,7 @@ const GameObjectsConfig = (function () {
     playerCoord = playerCoordA;
     score = scoreA;
     isGameEnd = isGameEndA;
+    playerCheating = playerCheatingA;
   };
 
   const getConfig = function () {
@@ -37,6 +40,7 @@ const GameObjectsConfig = (function () {
       playerCoord,
       score,
       isGameEnd,
+      playerCheating
     };
   };
 

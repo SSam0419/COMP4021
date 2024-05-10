@@ -36,7 +36,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       .useSheet("./assets/player_sprite.png"),
     attackRight: attackRightSprite
       .setSequence(attackRightSequences)
-      .setScale(-1, 0.75)
+      .setScale(0.75)
       .useSheet("./assets/Attack1.png"),
     attackLeft: attackLeftSprite
       .setSequence(attackRightSequences)
@@ -80,8 +80,9 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     return inFall;
   };
 
-  const cheatToggle = function(){
-    isCheating = !isCheating;
+  const cheatToggle = function(toCheat){
+    if(isCheating === toCheat) return;
+    isCheating = toCheat;
     if(isCheating){
       playerSprites = {
         movement: sprite
@@ -90,7 +91,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
           .useSheet("./assets/player_sprite_cheat.png"),
         attackRight: attackRightSprite
           .setSequence(attackRightSequences)
-          .setScale(-1, 0.75)
+          .setScale(0.75)
           .useSheet("./assets/Attack1_cheat.png"),
         attackLeft: attackLeftSprite
           .setSequence(attackRightSequences)
@@ -228,12 +229,12 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     Sounds.playDirect('attack')
 
     if(playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100)
-    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
+    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y-5}
 
     playerSprites.attackLeft.setSequence(attackRightSequences);
     playerSprites.attackLeft.setXY(
       savedCoord.x,
-      savedCoord.y - 5
+      savedCoord.y+5
     );
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
@@ -274,12 +275,12 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     attackDirection = "right";
 
     if(playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100)
-    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
+    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y - 5}
 
     playerSprites.attackRight.setSequence(attackRightSequences);
     playerSprites.attackRight.setXY(
       savedCoord.x,
-      savedCoord.y - 5
+      savedCoord.y +5
     );
     // hide player sprite
     playerSprites.movement.setXY(-100, -100);
@@ -335,7 +336,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     isTakingHit = true;
 
     if(playerSprites.movement.getXY().x !== -100 && playerSprites.movement.getXY().y !== -100)
-    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y}
+    savedCoord = {x:playerSprites.movement.getXY().x, y:playerSprites.movement.getXY().y - 5}
 
     playerSprites.death.setSequence(deathSequences);
     playerSprites.death.setXY(
@@ -353,7 +354,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
       isTakingHit = false;
       playerSprites.movement.setXY(
         savedCoord.x,
-        savedCoord.y
+        savedCoord.y - 5
       );
       playerSprites.movement.setSequence(sequences.idle);
       // remove attack sprite
@@ -439,7 +440,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
 
     if (getInJump()) {
       inCollider = false;
-      y -= ratio/3.5;
+      y -= ratio/4.5;
       if (direction != 0) {
         /* Change sprite mid-air */
         switch (direction) {
@@ -457,7 +458,7 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     }
 
     if (getInFall()) {
-      y += ratio/3.5;
+      y += ratio/4.5;
 
       if (direction != 0) {
         /* Change sprite mid-air */
@@ -525,9 +526,12 @@ const Player = function (ctx, x, y, gameArea, playerSlot) {
     return playerSlot;
   };
 
+  const getSavedCoordinate = () =>{
+    return savedCoord
+  }
   // The methods are returned as an object here.
   return {
-    getXY: playerSprites.movement.getXY,
+    getXY: getSavedCoordinate,
     setXY: playerSprites.movement.setXY,
     move: move,
     stop: stop,
